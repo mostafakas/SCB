@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الموارد البشرية (HRMS)</title>
+    <style>
+        /*
+        ========================================
+        CSS (للتنسيق والترتيب)
+        ========================================
+        */
+        :root {
+            --primary-color: #007bff; /* أزرق أساسي */
+            --secondary-color: #6c757d; /* رمادي */
+            --light-bg: #f8f9fa; /* خلفية فاتحة */
+            --dark-bg: #343a40; /* خلفية داكنة للناف بار */
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: #333;
+        }
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px); /* ارتفاع العرض - ارتفاع الهيدر */
+        }
+        .sidebar {
+            width: 250px;
+            background-color: var(--dark-bg);
+            padding-top: 20px;
+            color: white;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            border-bottom: 1px solid #495057;
+            text-align: right;
+        }
+        .sidebar-item:hover, .sidebar-item.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: none; /* إخفاء جميع الأقسام افتراضيا */
+        }
+        .section.active {
+            display: block;
+        }
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        /* تنسيق النماذج والجداول */
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], input[type="date"], select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .alert {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .data-summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            width: 30%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        نظام إدارة الموارد البشرية الموحد
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-item active" data-target="dashboard">📈 لوحة القيادة</div>
+            <div class="sidebar-item" data-target="employees">👤 بيانات الموظفين</div>
+            <div class="sidebar-item" data-target="leave-absence">🗓️ الإجازات والغيابات</div>
+            <div class="sidebar-item" data-target="payroll">💰 احتساب المرتبات</div>
+        </div>
+
+        <div class="main-content">
+            <div id="dashboard" class="section active">
+                <h2>لوحة القيادة</h2>
+                <div class="data-summary">
+                    <div class="summary-card">
+                        <h3>إجمالي الموظفين</h3>
+                        <p id="totalEmployees">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>أيام الغياب هذا الشهر</h3>
+                        <p id="monthlyAbsence">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>الرصيد الكلي المتبقي</h3>
+                        <p id="totalRemainingLeave">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="employees" class="section">
+                <h2>إدارة بيانات الموظفين</h2>
+                <div id="employeeAlert" class="alert"></div>
+
+                <form id="employeeForm">
+                    <h3>إضافة موظف جديد</h3>
+                    <label for="empID">رقم الموظف:</label>
+                    <input type="number" id="empID" required>
+
+                    <label for="empName">اسم الموظف:</label>
+                    <input type="text" id="empName" required>
+
+                    <label for="empSalary">الراتب الشهري الإجمالي:</label>
+                    <input type="number" id="empSalary" required>
+
+                    <label for="initialLeave">رصيد الإجازات السنوية المبدئي:</label>
+                    <input type="number" id="initialLeave" value="21" required>
+
+                    <button type="submit">إضافة الموظف</button>
+                </form>
+
+                <h3>قائمة الموظفين</h3>
+                <table id="employeeTable">
+                    <thead>
+                        <tr>
+                            <th>الرقم</th>
+                            <th>الاسم</th>
+                            <th>الراتب الإجمالي</th>
+                            <th>رصيد الإجازات المتبقي</th>
+                            <th>الراتب اليومي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="leave-absence" class="section">
+                <h2>سجل الإجازات والغيابات</h2>
+                <div id="leaveAlert" class="alert"></div>
+
+                <form id="leaveForm">
+                    <h3>تسجيل حركة جديدة</h3>
+                    <label for="leaveEmpID">رقم الموظف:</label>
+                    <input type="number" id="leaveEmpID" required>
+
+                    <label for="leaveType">نوع الحركة:</label>
+                    <select id="leaveType" required>
+                        <option value="annual">إجازة سنوية</option>
+                        <option value="sick">إجازة مرضية</option>
+                        <option value="unpaid">غياب/إجازة بدون أجر</option>
+                    </select>
+
+                    <label for="leaveDays">عدد الأيام:</label>
+                    <input type="number" id="leaveDays" min="1" required>
+
+                    <button type="submit">تسجيل الحركة</button>
+                </form>
+
+                <h3>سجل الحركات</h3>
+                <table id="leaveLogTable">
+                    <thead>
+                        <tr>
+                            <th>رقم الموظف</th>
+                            <th>الاسم</th>
+                            <th>النوع</th>
+                            <th>الأيام</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="payroll" class="section">
+                <h2>احتساب المرتبات</h2>
+                <button onclick="calculatePayroll()">إجراء احتساب المرتبات الشهرية</button>
+
+                <h3>كشف المرتبات للشهر الحالي</h3>
+                <table id="payrollTable">
+                    <thead>
+                        <tr>
+                            <th>الرقم</th>
+                            <th>الاسم</th>
+                            <th>راتب إجمالي</th>
+                            <th>أيام غياب (بدون أجر)</th>
+                            <th>خصم الغياب</th>
+                            <th>صافي المستحق</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+        ========================================
+        JavaScript (للوظائف والحسابات)
+        ========================================
+        */
+
+        // قاعدة بيانات مبسطة (مصفوفة من الكائنات)
+        let employees = [];
+        let leaveLog = [];
+
+        // 1. وظيفة التنقل بين الأقسام
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // إزالة التنشيط من جميع العناصر
+                document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+
+                // تنشيط العنصر المختار والقسم المستهدف
+                this.classList.add('active');
+                const targetId = this.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+
+                // تحديث لوحة القيادة عند التبديل
+                if (targetId === 'dashboard') {
+                    updateDashboard();
+                }
+            });
+        });
+
+        // 2. وظيفة إضافة موظف جديد
+        document.getElementById('employeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('empID').value;
+            const name = document.getElementById('empName').value;
+            const salary = parseFloat(document.getElementById('empSalary').value);
+            const initialLeave = parseInt(document.getElementById('initialLeave').value);
+
+            if (employees.some(emp => emp.id === id)) {
+                alert("هذا الرقم الوظيفي موجود بالفعل!");
+                return;
+            }
+
+            const dailySalary = salary / 30;
+
+            employees.push({
+                id,
+                name,
+                salary,
+                dailySalary: dailySalary.toFixed(2),
+                initialLeave,
+                usedLeave: 0,
+                unpaidAbsence: 0
+            });
+
+            // تحديث الواجهة
+            renderEmployeeTable();
+            document.getElementById('employeeForm').reset();
+            showAlert('employeeAlert', 'تم إضافة الموظف بنجاح.', 'success');
+        });
+
+        // 3. وظيفة تسجيل حركة الإجازة/الغياب
+        document.getElementById('leaveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const empID = document.getElementById('leaveEmpID').value;
+            const leaveType = document.getElementById('leaveType').value;
+            const days = parseInt(document.getElementById('leaveDays').value);
+
+            const empIndex = employees.findIndex(emp => emp.id === empID);
+
+            if (empIndex === -1) {
+                alert("رقم الموظف غير صحيح!");
+                return;
+            }
+
+            const employee = employees[empIndex];
+
+            // تحديث رصيد الموظف
+            if (leaveType === 'annual') {
+                if (employee.initialLeave - employee.usedLeave < days) {
+                    alert(`الرصيد المتبقي لإجازة ${employee.name} هو ${employee.initialLeave - employee.usedLeave} يوم فقط.`);
+                    return;
+                }
+                employees[empIndex].usedLeave += days;
+            } else if (leaveType === 'unpaid') {
+                employees[empIndex].unpaidAbsence += days;
+            }
+
+            // تسجيل الحركة في السجل
+            leaveLog.push({
+                empID,
+                name: employee.name,
+                type: leaveType,
+                days,
+                date: new Date().toLocaleDateString('ar-EG')
+            });
+
+            // تحديث الواجهة
+            renderEmployeeTable();
+            renderLeaveLogTable();
+            document.getElementById('leaveForm').reset();
+            showAlert('leaveAlert', 'تم تسجيل الحركة بنجاح.', 'success');
+        });
+
+        // 4. وظيفة عرض جدول الموظفين
+        function renderEmployeeTable() {
+            const tbody = document.getElementById('employeeTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            employees.forEach(emp => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = emp.id;
+                row.insertCell().textContent = emp.name;
+                row.insertCell().textContent = parseFloat(emp.salary).toLocaleString('ar-EG');
+                row.insertCell().textContent = emp.initialLeave - emp.usedLeave;
+                row.insertCell().textContent = parseFloat(emp.dailySalary).toLocaleString('ar-EG');
+            });
+            updateDashboard(); // تحديث لوحة القيادة بعد كل عملية
+        }
+
+        // 5. وظيفة عرض جدول سجل الحركات
+        function renderLeaveLogTable() {
+            const tbody = document.getElementById('leaveLogTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            leaveLog.forEach(log => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = log.empID;
+                row.insertCell().textContent = log.name;
+                // تحويل الكود إلى اسم واضح
+                let typeName;
+                if(log.type === 'annual') typeName = 'سنوية';
+                else if(log.type === 'sick') typeName = 'مرضية';
+                else typeName = 'غياب بدون أجر';
+                row.insertCell().textContent = typeName;
+                row.insertCell().textContent = log.days;
+                row.insertCell().textContent = log.date;
+            });
+        }
+
+        // 6. وظيفة احتساب المرتبات
+        function calculatePayroll() {
+            const tbody = document.getElementById('payrollTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            employees.forEach(emp => {
+                const deduction = emp.unpaidAbsence * emp.dailySalary;
+                const netSalary = emp.salary - deduction;
+
+                const row = tbody.insertRow();
+                row.insertCell().textContent = emp.id;
+                row.insertCell().textContent = emp.name;
+                row.insertCell().textContent = parseFloat(emp.salary).toLocaleString('ar-EG');
+                row.insertCell().textContent = emp.unpaidAbsence;
+                row.insertCell().textContent = parseFloat(deduction).toLocaleString('ar-EG');
+                row.insertCell().textContent = parseFloat(netSalary).toLocaleString('ar-EG');
+
+                // إعادة تعيين الغياب لـ 0 بعد احتساب المرتب (افتراضيا يتم تصفية الغياب شهريا)
+                // في نظام حقيقي يتم تصفيرها للشهر التالي
+                // employees.find(e => e.id === emp.id).unpaidAbsence = 0;
+            });
+            showAlert('payrollAlert', 'تم احتساب المرتبات بنجاح.', 'success');
+        }
+
+        // 7. وظيفة تحديث لوحة القيادة
+        function updateDashboard() {
+            document.getElementById('totalEmployees').textContent = employees.length;
+
+            const totalAbsence = leaveLog
+                .filter(log => log.type === 'unpaid')
+                .reduce((sum, log) => sum + log.days, 0);
+            document.getElementById('monthlyAbsence').textContent = totalAbsence;
+
+            const totalRemaining = employees.reduce((sum, emp) => sum + (emp.initialLeave - emp.usedLeave), 0);
+            document.getElementById('totalRemainingLeave').textContent = totalRemaining;
+        }
+
+        // 8. وظيفة عرض التنبيهات
+        function showAlert(elementId, message, type) {
+            const alertElement = document.getElementById(elementId);
+            alertElement.textContent = message;
+            alertElement.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
+            alertElement.style.display = 'block';
+            setTimeout(() => {
+                alertElement.style.display = 'none';
+            }, 3000);
+        }
+
+        // تهيئة البيانات عند تحميل الصفحة
+        renderEmployeeTable();
+        renderLeaveLogTable();
+
+    </script>
+</body>
+</html>
