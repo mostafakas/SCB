@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCB Admin | Smart Controller</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --scb-blue: #0033a0;
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --border: #334155;
+            --success: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--card-dark); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 2rem; border-bottom: 1px solid var(--border); text-align: center; }
+        .sidebar-header h2 { color: var(--accent); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        .nav-menu { flex: 1; padding: 1rem; }
+        .nav-item { padding: 1rem; margin-bottom: 0.5rem; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; font-weight: 600; color: #94a3b8; }
+        .nav-item:hover { background: rgba(56, 189, 248, 0.1); color: var(--accent); }
+        .nav-item.active { background: var(--scb-blue); color: white; }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .header-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card-dark); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
+        .stat-card h4 { color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem; }
+        .stat-card p { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+
+        /* Configurator Area */
+        .config-section { background: var(--card-dark); border-radius: 15px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-primary { background: var(--accent); color: var(--bg-dark); }
+        .btn-primary:hover { background: #7dd3fc; }
+        .btn-save { background: var(--success); color: white; width: 100%; margin-top: 1rem; padding: 1rem; }
+
+        /* Form Styling */
+        .input-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.4rem; }
+        input, select { width: 100%; padding: 0.8rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: white; outline: none; }
+        input:focus { border-color: var(--accent); }
+
+        /* Smart Fields Picker */
+        .fields-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 1rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 10px; }
+        .field-checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; padding: 5px; border-radius: 4px; }
+        .field-checkbox:hover { background: rgba(255,255,255,0.05); }
+        .field-checkbox input { width: auto; cursor: pointer; accent-color: var(--accent); }
+
+        /* Data Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { text-align: left; padding: 1rem; color: #94a3b8; border-bottom: 2px solid var(--border); }
+        td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        .badge-mail { background: #8b5cf6; }
+        .badge-req { background: #3b82f6; }
+        .badge-disp { background: #f59e0b; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header"><h2>SCB Controller</h2></div>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="showTab('mails')">✉️ Mail Inquiries</div>
+            <div class="nav-item" onclick="showTab('requests')">📝 General Requests</div>
+            <div class="nav-item" onclick="showTab('disputes')">⚖️ Dispute Builder</div>
+            <div class="nav-item" onclick="showTab('logs')">📊 Submission Logs</div>
+        </nav>
+        <div style="padding: 1rem; font-size: 0.7rem; color: #64748b; text-align: center;">Version 3.0 | Dev: Mohyi</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-stats">
+            <div class="stat-card"><h4>Active Requests</h4><p id="stat_req_count">0</p></div>
+            <div class="stat-card"><h4>Mail Subjects</h4><p id="stat_mail_count">0</p></div>
+            <div class="stat-card"><h4>Total Submissions</h4><p id="stat_logs_count">0</p></div>
+        </div>
+
+        <div id="tab_mails" class="config-section tab-content">
+            <div class="section-header"><h3>Inquiry Subject Manager</h3></div>
+            <div class="input-group" style="display: flex; gap: 10px;">
+                <input type="text" id="new_mail_subject" placeholder="Enter new subject name...">
+                <button class="btn btn-primary" onclick="addMailSubject()">Add Subject</button>
+            </div>
+            <table id="mail_table">
+                <thead><tr><th>Subject Name</th><th>Action</th></tr></thead>
+                <tbody id="mail_list"></tbody>
+            </table>
+        </div>
+
+        <div id="tab_requests" class="config-section tab-content hidden">
+            <div class="section-header"><h3>General Requests Architect</h3></div>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                <div>
+                    <div class="input-group"><label>Request Name</label><input type="text" id="req_name" placeholder="e.g. Loan Inquiry"></div>
+                    <label>Select Secondary Fields to Activate:</label>
+                    <div class="fields-grid" id="req_fields_picker">
+                        <label class="field-checkbox"><input type="checkbox" value="card_info"> Card Info</label>
+                        <label class="field-checkbox"><input type="checkbox" value="limit_info"> Limit Info</label>
+                        <label class="field-checkbox"><input type="checkbox" value="travel_info"> Travel Details</label>
+                        <label class="field-checkbox"><input type="checkbox" value="replacement_info"> Replacement Details</label>
+                        <label class="field-checkbox"><input type="checkbox" value="suffix_info"> Suffix Details</label>
+                        <label class="field-checkbox"><input type="checkbox" value="rule_info"> Rule Details</label>
+                        <label class="field-checkbox"><input type="checkbox" value="fraud_info"> Fraud Details</label>
+                        <label class="field-checkbox"><input type="checkbox" value="installment_info"> Installment Details</label>
+                    </div>
+                    <button class="btn btn-save" onclick="saveRequestConfig()">Save Request Type</button>
+                </div>
+                <table>
+                    <thead><tr><th>Request Type</th><th>Active Fields</th><th>Action</th></tr></thead>
+                    <tbody id="req_list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab_disputes" class="config-section tab-content hidden">
+            <div class="section-header"><h3>Dispute Logic Builder</h3></div>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                <div>
+                    <div class="input-group"><label>Dispute Type Name</label><input type="text" id="disp_name" placeholder="e.g. ATM Dispute"></div>
+                    <label>Activate Technical Data Fields:</label>
+                    <div class="fields-grid" id="disp_fields_picker">
+                        <label class="field-checkbox"><input type="checkbox" value="rrn"> RRN</label>
+                        <label class="field-checkbox"><input type="checkbox" value="auth"> Auth Num</label>
+                        <label class="field-checkbox"><input type="checkbox" value="trx_ref"> Trx Ref</label>
+                        <label class="field-checkbox"><input type="checkbox" value="ft_id"> FT ID</label>
+                        <label class="field-checkbox"><input type="checkbox" value="ledger"> Ledger</label>
+                        <label class="field-checkbox"><input type="checkbox" value="denom"> Denomination</label>
+                        <label class="field-checkbox"><input type="checkbox" value="merchant"> Merchant</label>
+                        <label class="field-checkbox"><input type="checkbox" value="atm_data"> ATM Data</label>
+                    </div>
+                    <button class="btn btn-save" onclick="saveDisputeConfig()">Save Dispute Type</button>
+                </div>
+                <tbody id="disp_list_table">
+                    <table>
+                        <thead><tr><th>Dispute Type</th><th>Fields</th><th>Action</th></tr></thead>
+                        <tbody id="disp_list"></tbody>
+                    </table>
+                </tbody>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Firebase Config (نفس بياناتك)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9B7xXTayPP4oALheBcruECwT_ZhEsthc",
+            authDomain: "scb-assistant.firebaseapp.com",
+            projectId: "scb-assistant",
+            storageBucket: "scb-assistant.firebasestorage.app",
+            messagingSenderId: "38859033708",
+            appId: "1:38859033708:web:66df471b9dbf8e67a25c49"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 2. Tab Navigation
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab_' + tab).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+        }
+
+        // 3. Mail Subject Logic
+        async function addMailSubject() {
+            const subject = document.getElementById('new_mail_subject').value;
+            if(!subject) return;
+            await db.collection("mail_configs").add({ name: subject });
+            document.getElementById('new_mail_subject').value = "";
+            loadMails();
+        }
+
+        function loadMails() {
+            db.collection("mail_configs").onSnapshot(snap => {
+                let html = "";
+                document.getElementById('stat_mail_count').innerText = snap.size;
+                snap.forEach(doc => {
+                    html += `<tr><td>${doc.data().name}</td><td><button class="btn" style="color:red" onclick="deleteDoc('mail_configs','${doc.id}')">Delete</button></td></tr>`;
+                });
+                document.getElementById('mail_list').innerHTML = html;
+            });
+        }
+
+        // 4. General Requests Logic
+        async function saveRequestConfig() {
+            const name = document.getElementById('req_name').value;
+            const selectedFields = Array.from(document.querySelectorAll('#req_fields_picker input:checked')).map(cb => cb.value);
+            if(!name) return;
+            await db.collection("request_types").doc(name).set({ fields: selectedFields });
+            alert("Request Configuration Saved!");
+            document.getElementById('req_name').value = "";
+        }
+
+        function loadRequests() {
+            db.collection("request_types").onSnapshot(snap => {
+                let html = "";
+                document.getElementById('stat_req_count').innerText = snap.size;
+                snap.forEach(doc => {
+                    html += `<tr><td><b>${doc.id}</b></td><td><small>${doc.data().fields.join(', ')}</small></td><td><button class="btn" style="color:red" onclick="deleteDoc('request_types','${doc.id}')">Delete</button></td></tr>`;
+                });
+                document.getElementById('req_list').innerHTML = html;
+            });
+        }
+
+        // 5. Dispute Logic
+        async function saveDisputeConfig() {
+            const name = document.getElementById('disp_name').value;
+            const selectedFields = Array.from(document.querySelectorAll('#disp_fields_picker input:checked')).map(cb => cb.value);
+            if(!name) return;
+            await db.collection("dispute_types").doc(name).set({ fields: selectedFields });
+            document.getElementById('disp_name').value = "";
+        }
+
+        function loadDisputes() {
+            db.collection("dispute_types").onSnapshot(snap => {
+                let html = "";
+                snap.forEach(doc => {
+                    html += `<tr><td><b>${doc.id}</b></td><td><small>${doc.data().fields.join(', ')}</small></td><td><button class="btn" style="color:red" onclick="deleteDoc('dispute_types','${doc.id}')">Delete</button></td></tr>`;
+                });
+                document.getElementById('disp_list').innerHTML = html;
+            });
+        }
+
+        // 6. Global Delete
+        async function deleteDoc(col, id) {
+            if(confirm("Are you sure?")) await db.collection(col).doc(id).delete();
+        }
+
+        // Initialize
+        loadMails();
+        loadRequests();
+        loadDisputes();
+    </script>
+</body>
+</html>
