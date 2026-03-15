@@ -552,8 +552,25 @@
     </div>
 
     <div id="copy-buffer" style="position: absolute; left: -9999px;"></div>
-
+        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script>
+                // 1. إعدادات مشروعك اللي إنت لسه باعتها
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9B7xXTayPP4oALheBcruECwT_ZhEsthc",
+            authDomain: "scb-assistant.firebaseapp.com",
+            projectId: "scb-assistant",
+            storageBucket: "scb-assistant.firebasestorage.app",
+            messagingSenderId: "38859033708",
+            appId: "1:38859033708:web:66df471b9dbf8e67a25c49",
+            measurementId: "G-LQP18EM785"
+        };
+
+        // 2. تشغيل فايربيز وقاعدة البيانات
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        console.log("Firebase is ready!");
         // --- Data ---
         let currentMission = "";
         let isLimitValid = true;
@@ -977,22 +994,46 @@
         function closeQA() { document.getElementById('qaModal').classList.remove('active'); }
         function validateQA() { const all = Array.from(document.querySelectorAll('.qa-chk')).every(x => x.checked); document.getElementById('finalBtn').disabled = !all; }
 
-        function copyData() {
-            const d = getFormData();
-            let table = `<table border="1" style="border-collapse:collapse; font-family:sans-serif; font-size:12px;">
-                <tr style="background:#0033a0; color:white;">${Object.keys(d).map(k=>`<th style="padding:8px; border:1px solid #ddd;">${k}</th>`).join('')}</tr>
-                <tr>${Object.values(d).map(v=>`<td style="padding:8px; border:1px solid #ddd;">${v}</td>`).join('')}</tr>
-            </table>`;
-            try {
-                const buffer = document.getElementById('copy-buffer'); buffer.innerHTML = table;
-                const range = document.createRange(); range.selectNode(buffer);
-                window.getSelection().removeAllRanges(); window.getSelection().addRange(range);
-                document.execCommand('copy');
-                const btn = document.getElementById('finalBtn'); const orig = btn.innerHTML;
-                btn.innerHTML = 'COPIED!'; btn.style.backgroundColor = 'var(--success)';
-                setTimeout(() => { closeQA(); btn.innerHTML = orig; btn.style.backgroundColor = ''; }, 1000);
-            } catch(e) { alert("Copy failed."); }
-        }
+        async function copyData() {
+    const d = getFormData(); // دي بتجيب البيانات اللي الموظف كتبها
+
+    // --- الجزء الخاص بإرسال البيانات للسحابة (Firebase) ---
+    try {
+        await db.collection("all_requests").add({
+            ...d,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(), // بيسجل وقت الطلب بالظبط
+            status: "Pending" // حالة الطلب دايما بتبدأ بـ قيد الانتظار
+        });
+        console.log("Success: Data saved to Firebase!");
+    } catch (error) {
+        console.error("Firebase Error: ", error);
+    }
+    // ---------------------------------------------------
+
+    // باقي كود النسخ بتاعك (الجدول اللي بيظهر للموظف)
+    let table = `<table border="1" style="border-collapse:collapse; font-family:sans-serif; font-size:12px;">
+        <tr style="background:#0033a0; color:white;">${Object.keys(d).map(k=>`<th style="padding:8px; border:1px solid #ddd;">${k}</th>`).join('')}</tr>
+        <tr>${Object.values(d).map(v=>`<td style="padding:8px; border:1px solid #ddd;">${v}</td>`).join('')}</tr>
+    </table>`;
+    
+    try {
+        const buffer = document.getElementById('copy-buffer'); 
+        buffer.innerHTML = table;
+        const range = document.createRange(); 
+        range.selectNode(buffer);
+        window.getSelection().removeAllRanges(); 
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        
+        const btn = document.getElementById('finalBtn'); 
+        const orig = btn.innerHTML;
+        btn.innerHTML = 'COPIED & SAVED!'; // غيرنا الكلمة هنا عشان يعرف إنها اتحفظت
+        btn.style.backgroundColor = 'var(--success)';
+        setTimeout(() => { closeQA(); btn.innerHTML = orig; btn.style.backgroundColor = ''; }, 1000);
+    } catch(e) { 
+        alert("Copy failed."); 
+    }
+}
 
         // --- OUTLOOK MAILER ---
         function handleRequestsOutlook(phone, acc) {
