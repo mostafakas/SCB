@@ -242,148 +242,19 @@
                                 <div class="dispute-only hidden input-group"><label class="label-pro">Dispute Branch</label><select id="disp_branch" class="input-pro branch-list"></select></div>
                             </div>
 
-                            <div class="request-only hidden" style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
-                                <div class="section-title" style="margin-bottom: 0.5rem;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Request Details</div>
-                                <div class="input-group" style="width: 40%;">
-                                    <label class="label-pro">Request Type <span style="color:red">*</span></label>
-                                    <select id="main_request_type" class="input-pro" onchange="handleMainRequestChange()">
-                                        <option value="">Select Request Type...</option>
-                                        <option value="Online Limit">Online Limit (E-Comm)</option>
-                                        <option value="Travel Note">Travel Note</option>
-                                        <option value="Card Replacement">Card Replacement</option>
-                                        <option value="Reset PIN">Reset PIN</option>
-                                        <option value="Suffix">Add & Edit Suffix</option>
-                                        <option value="Remove Rule">Remove Rule</option>
-                                        <option value="SMS Mod">SMS Modification</option>
-                                        <option value="CC Referral">CC Referral</option>
-                                        <option value="Activation">Resent Activation Code</option>
-                                        <option value="Fraud">Fraud Suspicious</option>
-                                        <option value="CC_Install">CC Installment Request</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="card-only hidden" style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
-                                <div class="section-title"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> Card Information</div>
-                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                                    <div class="input-group"><label class="label-pro">Card Number</label><input type="text" id="card_num" maxlength="19" placeholder="xxxx xxxx xxxx xxxx" class="input-pro font-mono" style="text-align: center; font-weight: bold; color: var(--scb-blue);"></div>
-                                    <div class="input-group"><label class="label-pro">Card Type</label><select id="card_type" onchange="loadCats()" class="input-pro"><option value="">Select...</option><option value="Debit">Debit Card</option><option value="Credit">Credit Card</option><option value="Prepaid" id="prepaidOpt">Prepaid Card</option></select></div>
-                                    <div class="input-group"><label class="label-pro">Card Category</label><select id="card_cat" onchange="handleCatChange()" class="input-pro"></select></div>
-                                </div>
-                            </div>
-
-                            <div id="travel_limits_box" style="display: none; border: 2px solid; border-radius: 8px; padding: 0.5rem; margin: 0.25rem 0; justify-content: space-around; font-weight: 800; align-items: center; font-size: 0.75rem;">
-                                <div class="flex items-center gap-2"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> <span>POS: </span> <span id="limit_buy">--</span></div>
-                                <div style="width: 2px; height: 15px; background: currentColor; opacity: 0.3;"></div>
-                                <div class="flex items-center gap-2"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg> <span>CASH: </span> <span id="limit_cash">--</span></div>
-                            </div>
-                            <div id="replacement_fee_box" style="display: none; background: #fffbeb; border: 1px solid #f59e0b; border-radius: 8px; padding: 0.5rem; margin: 0.25rem 0; color: #b45309; font-weight: 800; justify-content: center; gap: 0.75rem; font-size: 0.75rem;">
-                                <svg class="svg-icon" viewBox="0 0 24 24" style="color: #f59e0b;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                                <span>Replacement Fee: </span> <span id="rep_fee_amt">--</span>
-                            </div>
-
-                            <div class="complaint-only hidden" style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
-                                <div class="section-title"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Complaint Details</div>
-                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                                    <div class="input-group"><label class="label-pro">Entity Name</label><select id="comp_entity" class="input-pro branch-list"></select></div>
-                                    <div class="input-group"><label class="label-pro">Branch Ticket (Optional)</label><input type="text" id="comp_ticket" class="input-pro font-mono"></div>
-                                    <div class="input-group"><label class="label-pro">Visit Date</label><input type="date" id="visit_date" class="input-pro"></div>
-                                    <div class="input-group" style="grid-column: span 2;"><label class="label-pro">Complaint Details</label><textarea id="comp_details" rows="2" class="input-pro" placeholder="Details..."></textarea></div>
-                                    <div class="input-group"><label class="label-pro">Action Required</label><textarea id="comp_action" rows="2" class="input-pro" placeholder="Action..."></textarea></div>
-                                </div>
-                            </div>
-
-                            <div class="dispute-only hidden" style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
-                                <div class="section-title" style="margin-bottom: 0.5rem;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Dispute Details</div>
-                                <div class="input-group" style="width: 40%;">
-                                    <label class="label-pro">Dispute Request Type <span style="color:red">*</span></label>
-                                    <select id="dispute_type" class="input-pro" onchange="handleDisputeChange()">
-                                        <option value="">Select Dispute Type...</option>
-                                        <option value="Dispute Request - ATM Cash Dispute">ATM Cash Dispute</option>
-                                        <option value="Dispute Request - ATM Deposit Dispute">ATM Deposit Dispute</option>
-                                        <option value="Dispute Request - POS & Online Trx Dispute">POS & Online Trx Dispute</option>
-                                        <option value="Dispute Request - Release Hold Dispute">Release Hold Dispute</option>
-                                        <option value="Dispute Request - E-Wallet ATM Cash Out">E-Wallet ATM Cash Out</option>
-                                        <option value="Dispute Request - E-Wallet ATM Deposit">E-Wallet ATM Deposit</option>
-                                        <option value="Dispute Request - E-Wallet Purchase - Fawry Services">E-Wallet Purchase - Fawry Services</option>
-                                        <option value="Dispute Request - E-banking Transaction Dispute">E-banking Transaction Dispute</option>
-                                        <option value="Dispute Request - InstaPay Dispute">InstaPay Dispute</option>
-                                        <option value="Dispute Request - ATM Operator">ATM Operator</option>
-                                    </select>
-                                </div>
-                               <div id="dispute_dynamic_fields" style="display: none; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
-                                    <div class="input-group disp-fld disp-card hidden"><label class="label-pro">Masked Card Num</label><input type="text" id="disp_card_num" class="input-pro font-mono"></div>
-                                    <div class="input-group disp-fld disp-sub-mobile hidden"><label class="label-pro">Subscribed Mobile Num</label><input type="text" id="disp_sub_mobile" class="input-pro font-mono"></div>
-                                    
-                                    <div class="input-group disp-fld disp-rrn hidden"><label class="label-pro">RRN</label><input type="text" id="disp_rrn" class="input-pro font-mono"></div>
-                                    <div class="input-group disp-fld disp-auth hidden"><label class="label-pro">Authorization Num</label><input type="text" id="disp_auth_num" class="input-pro font-mono"></div>
-                                    <div class="input-group disp-fld disp-trx-ref hidden"><label class="label-pro">Transaction Ref / Ref No</label><input type="text" id="disp_trx_ref" class="input-pro font-mono"></div>
-                                    <div class="input-group disp-fld disp-ft-id hidden"><label class="label-pro">FT ID / Reference</label><input type="text" id="disp_ft_id" class="input-pro font-mono"></div>
-                                    
-                                    <div class="input-group disp-fld disp-trx-date hidden"><label class="label-pro">Transaction Date</label><input type="date" id="disp_trx_date" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-trx-amt hidden"><label class="label-pro">Transaction Amount</label><input type="number" id="disp_trx_amt" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-disp-amt hidden"><label class="label-pro">Dispute Amount</label><input type="number" id="disp_disp_amt" class="input-pro"></div>
-                                    
-                                    <div class="input-group disp-fld disp-merch hidden"><label class="label-pro">Merchant Name</label><input type="text" id="disp_merch" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-atm-data hidden"><label class="label-pro">ATM Data</label><input type="text" id="disp_atm_data" class="input-pro"></div>
-                                    
-                                    <div class="input-group disp-fld disp-ledger hidden"><label class="label-pro">Ledger (Debited/Credited)</label><input type="text" id="disp_ledger" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-aclk hidden"><label class="label-pro">ACLK Num</label><input type="text" id="disp_aclk" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-denom hidden"><label class="label-pro">Denomination (فئات المبلغ)</label><input type="text" id="disp_denom" class="input-pro"></div>
-
-                                    <div class="input-group disp-fld disp-transfer-method hidden"><label class="label-pro">Transfer Method</label><input type="text" id="disp_method" class="input-pro" placeholder="Acc/Card/IPA"></div>
-                                    <div class="input-group disp-fld disp-payee-ipa hidden"><label class="label-pro">Payee IPA</label><input type="text" id="disp_ipa" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-ben-info hidden" style="grid-column: span 2;"><label class="label-pro">Beneficiary Info (Name/Acc)</label><input type="text" id="disp_ben" class="input-pro"></div>
-
-                                    <div class="input-group disp-fld disp-desc hidden" style="grid-column: 1 / -1;"><label class="label-pro">Description / Reason </label><textarea id="disp_desc" rows="1" class="input-pro" style="height:40px;"></textarea></div>
-                                    <div class="input-group disp-fld disp-iban hidden" style="grid-column: span 2;"><label class="label-pro">IBAN (رقم الحساب الدولي)</label><input type="text" id="disp_iban" class="input-pro font-mono"></div>
-                                    <div class="input-group disp-fld disp-bank-name hidden"><label class="label-pro">Bank Name (اسم البنك)</label><input type="text" id="disp_bank_name" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-country hidden"><label class="label-pro">Country (الدولة)</label><input type="text" id="disp_atm_country" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-denom-val hidden" style="grid-column: span 2;"><label class="label-pro">Value & Denominations (المبلغ والفئات)</label><input type="text" id="disp_denom_val" class="input-pro" placeholder="e.g. 2000 EGP (4x500)"></div>
-                                    <div class="input-group disp-fld disp-datetime hidden"><label class="label-pro">Date & Time (التاريخ والوقت)</label><input type="datetime-local" id="disp_datetime" class="input-pro"></div>
-                                    <div class="input-group disp-fld disp-atm-id hidden"><label class="label-pro">ATM ID (رقم الماكينة)</label><input type="text" id="disp_atm_id" class="input-pro font-mono"></div>
-                                </div>
-                            </div>
-
-                            <div class="specifics-section">
-                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-                                    <div class="limit-only hidden input-group"><label class="label-pro">Requested Limit</label><input type="number" id="req_limit" oninput="checkLimitMax()" class="input-pro font-bold"><span id="limit_error" style="font-size: 0.6rem; font-weight: bold; color: var(--danger); display: block; margin-top: 2px; height: 10px;"></span></div>
-                                    <div class="limit-only hidden input-group"><label class="label-pro">Activation Date</label><input type="date" id="activation_date" class="input-pro"></div>
-                                    <div class="limit-only hidden input-group"><label class="label-pro">Expiry Mode</label><div class="radio-group"><label><input type="radio" name="expiry_mode" value="date" checked onchange="toggleExpiry()" class="hidden"><span>Date</span></label><label><input type="radio" name="expiry_mode" value="open" onchange="toggleExpiry()" class="hidden"><span>Open</span></label></div></div>
-                                    <div class="limit-only hidden input-group" id="expiry_date_div"><label class="label-pro">Expiry Date</label><input type="date" id="expiry_date" class="input-pro"></div>
-
-                                    <div class="travel-only hidden input-group"><label class="label-pro">International Num</label><input type="text" id="intl_phone" class="input-pro font-mono"></div>
-                                    <div class="travel-only hidden input-group"><label class="label-pro">Destination</label><input list="country_list" id="country_in" class="input-pro"><datalist id="country_list"></datalist></div>
-                                    <div class="travel-only hidden input-group"><label class="label-pro">From Date</label><input type="date" id="d_date" class="input-pro"></div>
-                                    <div class="travel-only hidden input-group"><label class="label-pro">To Date</label><input type="date" id="r_date" class="input-pro"></div>
-
-                                    <div class="replacement-only hidden input-group"><label class="label-pro">Reason</label><select id="replace_reason" class="input-pro"><option>Lost</option><option>Stolen</option><option>Damaged</option><option>Captured</option></select></div>
-                                    <div class="replacement-only hidden input-group"><label class="label-pro">Pickup Branch</label><select id="pickup_branch" class="input-pro branch-list"></select></div>
-
-                                    <div class="mails-only hidden input-group"><label class="label-pro">Branch Code</label><input type="text" id="branch_code" class="input-pro font-mono"></div>
-                                    <div class="mails-only hidden input-group" style="grid-column: span 2;"><label class="label-pro">Inquiry Subject</label><select id="inquiry_type" class="input-pro"><option>SpotLight Issue</option><option>Spotlight corp. Issue</option><option>Data Modification</option><option>Account Hold</option><option>Delivery Card</option><option>Account Status</option><option>Card Status</option><option>ATM Operator</option><option>Update KYC</option></select></div>
-                                    <div class="mails-only hidden input-group" style="grid-column: 1 / -1;"><label class="label-pro">Description</label><textarea id="inquiry_desc" rows="1" class="input-pro" placeholder="Details..." style="height:30px;"></textarea></div>
-                                    <div class="suffix-only hidden input-group"><label class="label-pro">Suffix Number</label><input type="text" id="suffix_num" class="input-pro font-mono"></div>
-                                    <div class="suffix-only hidden input-group"><label class="label-pro">Suffix Type</label><select id="suffix_type" class="input-pro"><option>Saving</option><option>Current</option><option>Credit</option></select></div>
-                                    <div class="suffix-only hidden input-group"><label class="label-pro">Primary Account Type</label><select id="p_acc_type" class="input-pro"><option>Saving</option><option>Current</option><option>Credit</option></select></div>
-
-                                    <div class="rule-only hidden input-group"><label class="label-pro">Rule Type</label><select id="rule_type" class="input-pro"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-                                    <div class="rule-only hidden input-group"><label class="label-pro">Removal Duration</label><input type="text" id="rule_duration" class="input-pro" placeholder="e.g. 2 Hours"></div>
-
-                                    <div class="cc-ref-only hidden input-group" style="grid-column: span 2;"><label class="label-pro">Transaction Description</label><textarea id="trx_desc" class="input-pro" rows="1"></textarea></div>
-
-                                    <div class="activation-only hidden input-group"><label class="label-pro">Username</label><input type="text" id="web_user" class="input-pro"></div>
-                                    <div class="activation-only hidden input-group"><label class="label-pro">User Type</label><select id="user_type" class="input-pro"><option>Viewer</option><option>Super</option></select></div>
-
-                                    <div class="fraud-only hidden input-group" style="grid-column: 1 / -1;"><label class="label-pro">Fraud Transaction Details</label><textarea id="fraud_details" class="input-pro" rows="2" placeholder="Write full details..."></textarea></div>
-                                    <div class="cc-install-only hidden input-group"><label class="label-pro">Transaction Type</label><select id="inst_trx_type" class="input-pro"><option>POS</option><option>Cash</option></select></div>
-                                    <div class="cc-install-only hidden input-group"><label class="label-pro">Tenor (Months)</label><select id="inst_tenor" class="input-pro"><option>3</option><option>6</option><option>9</option><option>12</option><option>15</option><option>18</option></select></div>
-                                    <div class="cc-install-only hidden input-group"><label class="label-pro">Transaction Date</label><input type="date" id="inst_trx_date" class="input-pro"></div>
-                                    <div class="cc-install-only hidden input-group"><label class="label-pro">Transaction Amount</label><input type="number" id="inst_trx_amt" class="input-pro" placeholder="0.00"></div>
-                                    <div class="cc-install-only hidden input-group" style="grid-column: span 2;"><label class="label-pro">Reference Number</label><input type="text" id="inst_ref_num" class="input-pro font-mono"></div>
-                                </div>
+                            <div style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
+                            <div class="section-title"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Request Details</div>
+                            
+                            <div class="input-group" style="width: 50%;">
+                                <label class="label-pro">Select Category <span style="color:red">*</span></label>
+                                <select id="dynamic_request_type" class="input-pro" onchange="buildDynamicFields()">
+                                    <option value="">Loading types...</option>
+                                </select>
                             </div>
                         </div>
+                        
+                        <div id="dynamic_fields_container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 1rem;">
+                            </div>
 
                         <div style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem; display: flex; gap: 0.75rem;">
                             <button type="button" onclick="openQA()" class="btn btn-primary" style="flex: 2;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> VERIFY & COPY</button>
@@ -577,6 +448,7 @@
         console.log("Firebase is ready!");
         // --- Data ---
         let currentMission = "";
+        let requestSchemas = {};
         let isLimitValid = true;
 
         const countries = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Democratic Republic of the Congo", "Costa Rica", "Côte d’Ivoire", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "North Korea", "South Korea", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"];
@@ -633,6 +505,70 @@
             setInterval(() => { 
                 document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); 
             }, 1000);
+        }
+        loadDynamicSchemas();
+        // الدالة دي بتجيب أنواع الطلبات من الداتابيز وتحطها في القايمة المنسدلة
+        function loadDynamicSchemas() {
+            db.collection("request_types").onSnapshot((snapshot) => {
+                const selectElement = document.getElementById('dynamic_request_type');
+                // تفريغ القائمة القديمة
+                if(selectElement) {
+                    selectElement.innerHTML = '<option value="">Select Request Type...</option>';
+                }
+                
+                requestSchemas = {}; // تصفير الداتا القديمة
+        
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    requestSchemas[doc.id] = data.fields; // بنحفظ الحقول بتاعت كل طلب
+                    if(selectElement) {
+                        selectElement.add(new Option(doc.id, doc.id)); // بنضيف اسم الطلب للقايمة
+                    }
+                });
+                console.log("تم تحميل الطلبات الديناميكية بنجاح!");
+            });
+        }
+        
+        // الدالة دي بترسم الحقول (مربعات النص والقوائم) لما الموظف يختار طلب
+        function buildDynamicFields() {
+            const selectedType = document.getElementById('dynamic_request_type').value;
+            const container = document.getElementById('dynamic_fields_container');
+            container.innerHTML = ''; // بننضف الشاشة من حقول الطلب القديم
+        
+            currentMission = selectedType; // بنعرف السيستم إيه الطلب الحالي
+        
+            // لو الموظف رجع اختار "Select..." نوقف الشغل
+            if (!selectedType || !requestSchemas[selectedType]) return;
+        
+            const fields = requestSchemas[selectedType];
+            
+            // بنلف على كل حقل الأدمن اختاره ونرسمه
+            fields.forEach(field => {
+                let inputHtml = '';
+                
+                if (field.type === 'select') {
+                    // لو الحقل عبارة عن قايمة منسدلة (زي أنواع الكروت)
+                    let optionsHtml = '<option value="">Select...</option>';
+                    if(field.options) {
+                        field.options.forEach(opt => {
+                            optionsHtml += `<option value="${opt}">${opt}</option>`;
+                        });
+                    }
+                    inputHtml = `<select id="${field.id}" class="input-pro">${optionsHtml}</select>`;
+                } else {
+                    // لو الحقل نص أو رقم أو تاريخ
+                    let extraClass = (field.id === 'card_num') ? 'font-mono' : ''; // خط مميز لرقم الكارت
+                    inputHtml = `<input type="${field.type}" id="${field.id}" class="input-pro ${extraClass}">`;
+                }
+        
+                const fieldHtml = `
+                    <div class="input-group">
+                        <label class="label-pro">${field.label}</label>
+                        ${inputHtml}
+                    </div>
+                `;
+                container.innerHTML += fieldHtml;
+            });
         }
 
         function enterMission() {
@@ -722,31 +658,6 @@
         document.getElementById('dispute_dynamic_fields').style.display = 'none'; 
     }
 }
-
-        function handleMainRequestChange() {
-                const type = document.getElementById('main_request_type').value;
-                currentMission = type;
-                
-                // إخفاء كل شيء أولاً
-                document.querySelectorAll('.travel-only, .replacement-only, .card-only, .limit-only, .suffix-only, .rule-only, .cc-ref-only, .activation-only, .fraud-only, .cc-install-only, .branch-field').forEach(el => el.classList.add('hidden'));                
-                if(!type) return;
-
-                // إظهار الخانات بناءً على نوع الطلب
-                if(type === 'Online Limit') { document.querySelectorAll('.card-only, .limit-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Travel Note') { document.querySelectorAll('.card-only, .travel-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Card Replacement') { document.querySelectorAll('.card-only, .replacement-only, .branch-field').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Reset PIN') { document.querySelectorAll('.card-only').forEach(el => el.classList.remove('hidden')); }
-                
-                // الطلبات الجديدة
-                else if(type === 'Suffix') { document.querySelectorAll('.card-only, .suffix-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Remove Rule') { document.querySelectorAll('.card-only, .rule-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'SMS Mod') { document.querySelectorAll('.card-only, .branch-field').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'CC Referral') { document.querySelectorAll('.card-only, .cc-ref-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Activation') { document.querySelectorAll('.activation-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Fraud') { document.querySelectorAll('.card-only, .fraud-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'CC_Install') { document.querySelectorAll('.card-only, .cc-install-only').forEach(el => el.classList.remove('hidden')); }
-            }
-
         function loadCats() {
             const t = document.getElementById('card_type').value;
             const c = document.getElementById('card_cat');
