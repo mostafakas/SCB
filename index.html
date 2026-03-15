@@ -1,461 +1,1191 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة الموارد البشرية (HRMS)</title>
+    <title>SCB Assistant | Professional ERP</title>
+    
     <style>
-        /*
-        ========================================
-        CSS (للتنسيق والترتيب)
-        ========================================
-        */
+        /* =========================================
+           1. CSS Variables & Reset
+        ========================================= */
         :root {
-            --primary-color: #007bff; /* أزرق أساسي */
-            --secondary-color: #6c757d; /* رمادي */
-            --light-bg: #f8f9fa; /* خلفية فاتحة */
-            --dark-bg: #343a40; /* خلفية داكنة للناف بار */
+            --scb-blue: #0033a0;
+            --scb-light: #e6f0ff;
+            --scb-hover: #002277;
+            --bg-color: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --input-bg: #f8fafc;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --cyan: #06b6d4;
+            --purple: #8b5cf6;
+            --sidebar-width: 240px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
+
+        .dark {
+            --bg-color: #0b1121; --card-bg: #151e32; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --border-color: #27354f; --input-bg: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-bg);
-            color: #333;
+            background-color: var(--bg-color); color: var(--text-main); height: 100vh;
+            overflow: hidden; display: flex; transition: background-color 0.3s, color 0.3s;
         }
-        .header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            font-size: 24px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .container {
-            display: flex;
-            min-height: calc(100vh - 70px); /* ارتفاع العرض - ارتفاع الهيدر */
-        }
+
+        /* =========================================
+           2. Layout (Sidebar)
+        ========================================= */
         .sidebar {
-            width: 250px;
-            background-color: var(--dark-bg);
-            padding-top: 20px;
-            color: white;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            width: var(--sidebar-width); background-color: var(--card-bg); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; transition: all 0.3s ease; z-index: 100;
         }
-        .sidebar-item {
-            padding: 15px 20px;
+        
+        .sidebar-header {
+            height: 60px; display: flex; align-items: center; padding: 0 1.2rem;
+            border-bottom: 1px solid var(--border-color); gap: 10px;
+        }
+        .sidebar-header svg { width: 24px; height: 24px; color: var(--scb-blue); }
+        .sidebar-header h2 { font-size: 1rem; letter-spacing: -0.5px; }
+
+        .nav-menu { flex: 1; padding: 1rem 0; display: flex; flex-direction: column; gap: 0.2rem; }
+        
+        .nav-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.2rem;
+            color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.85rem;
+            border-left: 4px solid transparent; transition: all 0.2s ease; cursor: pointer;
+        }
+        
+        .nav-item:hover { background-color: var(--input-bg); color: var(--scb-blue); }
+        .nav-item.active { background-color: var(--scb-light); color: var(--scb-blue); border-left-color: var(--scb-blue); }
+        .dark .nav-item:hover { color: #ffffff; background-color: rgba(255,255,255,0.05); }
+        .dark .nav-item.active { background-color: rgba(0, 51, 160, 0.4); color: #ffffff; border-left-color: #ffffff; }
+
+        /* =========================================
+           3. Main Content Area
+        ========================================= */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        header {
+            height: 60px; background-color: var(--card-bg); border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 50;
+        }
+        
+        main { flex: 1; padding: 1rem; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 1150px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+
+        /* =========================================
+           4. Utility Classes & Components
+        ========================================= */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        
+        h1, h2, h3 { color: var(--text-main); font-weight: 700; }
+        .font-mono { font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; }
+
+        .btn {
+            padding: 0.6rem 1.2rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem;
+        }
+        .btn-primary { background-color: var(--scb-blue); color: white; }
+        .btn-primary:hover { background-color: var(--scb-hover); }
+        .btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-outline:hover { background-color: var(--border-color); }
+        .btn-icon { width: 35px; height: 35px; border-radius: 50%; padding: 0; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+        .btn-icon:hover { color: var(--scb-blue); border-color: var(--scb-blue); }
+
+        .input-group { margin-bottom: 0.4rem; }
+        .label-pro { display: block; font-size: 0.65rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.2rem; text-transform: uppercase; }
+        .input-pro {
+            width: 100%; padding: 0.35rem 0.6rem; border-radius: 6px; border: 1px solid var(--border-color);
+            background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 0.8rem; transition: border-color 0.2s; height: 32px;
+        }
+        textarea.input-pro { height: auto; resize: none; }
+        .input-pro:focus { outline: none; border-color: var(--scb-blue); box-shadow: 0 0 0 2px var(--scb-light); }
+        .input-error { border-color: var(--danger) !important; background-color: #fef2f2 !important; }
+
+        /* ستايل احترافي للقوائم المنسدلة للطلبات */
+        #main_request_type, #dispute_type {
+            background-color: #f0f7ff !important;
+            border: 2px solid var(--scb-blue) !important;
+            color: var(--scb-blue) !important;
+            font-weight: 800 !important;
+            font-size: 0.9rem !important;
+            height: 40px !important;
             cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            border-bottom: 1px solid #495057;
-            text-align: right;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 51, 160, 0.1);
         }
-        .sidebar-item:hover, .sidebar-item.active {
-            background-color: var(--primary-color);
-            color: white;
+        #main_request_type:hover, #dispute_type:hover {
+            background-color: var(--scb-light) !important;
+            border-color: var(--scb-hover) !important;
+            transform: scale(1.01);
         }
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
+        #main_request_type:focus, #dispute_type:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.2);
         }
-        .section {
-            background-color: white;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            display: none; /* إخفاء جميع الأقسام افتراضيا */
+
+        .section-title {
+            display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.25rem; margin-bottom: 0.6rem; margin-top: 0.4rem;
+            color: var(--text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
         }
-        .section.active {
-            display: block;
-        }
-        h2 {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        /* تنسيق النماذج والجداول */
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="number"], input[type="date"], select, button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: right;
-        }
-        th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-        .alert {
-            padding: 10px;
-            background-color: #28a745;
-            color: white;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            display: none;
-        }
-        .data-summary {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-        .summary-card {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 5px;
-            width: 30%;
-            text-align: center;
-        }
+
+        .radio-group { display: flex; gap: 0.5rem; height: 30px; }
+        .radio-group label { flex: 1; padding: 0.2rem; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; justify-content: center;}
+        .radio-group input:checked + span { color: var(--scb-blue); }
+        .radio-group label:has(input:checked) { border-color: var(--scb-blue); background: var(--scb-light); }
+        .dark .radio-group label:has(input:checked) { background: #1e3a8a; color: white; }
+
+        /* Splash & Views */
+        #splash { position: fixed; inset: 0; z-index: 9999; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
+        .splash-logo { width: 70px; height: 70px; background: var(--scb-blue); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; color: white; }
+        
+        .view { display: none; animation: slideUp 0.3s ease forwards; height: 100%; width: 100%; }
+        .view.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal */
+        #qaModal { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; }
+        #qaModal.active { display: flex; }
+        .modal-content { background: var(--card-bg); width: 100%; max-width: 400px; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .modal-header { background: var(--scb-blue); color: white; padding: 1rem; text-align: center; }
+        .modal-body { padding: 1.2rem; }
+        .qa-item { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem; cursor: pointer; }
+        .qa-item input { margin-top: 0.15rem; width: 14px; height: 14px; accent-color: var(--scb-blue); }
+
+        .soon-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--text-muted); }
+        .soon-state svg { width: 80px; height: 80px; color: var(--border-color); margin-bottom: 1.5rem; }
+
+        .svg-icon { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     </style>
 </head>
-<body>
+<body class="light">
 
-    <div class="header">
-        نظام إدارة الموارد البشرية الموحد
+    <div id="splash">
+        <div class="splash-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h1 style="font-size: 2rem; letter-spacing: -1px; margin-bottom: 0.3rem;">SCB Assistant</h1>
+        <p style="color: var(--scb-blue); font-weight: 700; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 1.5rem;">PROFESSIONAL ERP</p>
+        <button class="btn btn-primary" style="border-radius: 50px;" onclick="enterMission()">
+            ENTER WORKSPACE <svg class="svg-icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
     </div>
 
-    <div class="container">
-        <div class="sidebar">
-            <div class="sidebar-item active" data-target="dashboard">📈 لوحة القيادة</div>
-            <div class="sidebar-item" data-target="employees">👤 بيانات الموظفين</div>
-            <div class="sidebar-item" data-target="leave-absence">🗓️ الإجازات والغيابات</div>
-            <div class="sidebar-item" data-target="payroll">💰 احتساب المرتبات</div>
-        </div>
+        <aside class="sidebar">
+                <div class="sidebar-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <h2>SCB <span style="color: var(--scb-blue);">Assistant</span></h2>
+                </div>
+                <nav class="nav-menu">
+                    <a class="nav-item active" id="tab-requests" onclick="switchTab('requests')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Requests</a>
+                    <a class="nav-item" id="tab-mails" onclick="switchTab('mails')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> Mails</a>
+                    <a class="nav-item" id="tab-complaint" onclick="switchTab('complaint')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Complaints</a>
+                    <a class="nav-item" id="tab-disputes" onclick="switchTab('disputes')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Disputes</a>
+                    <a class="nav-item" id="tab-loans" onclick="switchTab('loans')"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14.01"></line><line x1="12" y1="14" x2="12" y2="14.01"></line><line x1="8" y1="14" x2="8" y2="14.01"></line><line x1="16" y1="10" x2="16" y2="10.01"></line><line x1="12" y1="10" x2="12" y2="10.01"></line><line x1="8" y1="10" x2="8" y2="10.01"></line></svg> Loan & Installments</a>
+                    <a class="nav-item" id="tab-tariff" onclick="switchTab('tariff')">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> 
+                        Tariff Guide
+                    </a>
+                </nav>
+            </aside>
 
-        <div class="main-content">
-            <div id="dashboard" class="section active">
-                <h2>لوحة القيادة</h2>
-                <div class="data-summary">
-                    <div class="summary-card">
-                        <h3>إجمالي الموظفين</h3>
-                        <p id="totalEmployees">0</p>
-                    </div>
-                    <div class="summary-card">
-                        <h3>أيام الغياب هذا الشهر</h3>
-                        <p id="monthlyAbsence">0</p>
-                    </div>
-                    <div class="summary-card">
-                        <h3>الرصيد الكلي المتبقي</h3>
-                        <p id="totalRemainingLeave">0</p>
-                    </div>
+    <div class="main-wrapper">
+        <header>
+            <div class="flex items-center gap-4">
+                <div>
+                    <h2 id="mainTitle" style="font-size: 1.1rem; letter-spacing: -0.5px;">Requests Dashboard</h2>
+                    <p id="subTitle" style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Overview</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="clock" style="font-family: monospace; font-weight: bold; color: var(--text-muted); font-size: 0.8rem;"></div>
+                <button onclick="toggleTheme()" class="btn-icon" id="themeBtn"><svg class="svg-icon" viewBox="0 0 24 24" id="themeIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+            </div>
+        </header>
+
+        <main>
+            <div id="formView" class="view container active">
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.75rem 1.2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); height: 100%; display: flex; flex-direction: column;">
+                    <form id="missionForm" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        
+                        <div>
+                            <div class="section-title"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Client Identification</div>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                                <div class="input-group"><label class="label-pro">Ticket</label><input type="text" id="ticket_num" class="input-pro font-mono" placeholder="Optional"></div>
+                                <div class="input-group"><label class="label-pro">Customer Name <span style="color:red">*</span></label><input type="text" id="cust_name" class="input-pro"></div>
+                                <div class="input-group"><label class="label-pro">Account Number <span style="color:red">*</span></label><input type="text" id="acc_num" class="input-pro font-mono" placeholder="Numbers only"></div>
+                                <div class="input-group"><label class="label-pro">Segment</label><select id="cust_type" class="input-pro"><option>MASS</option><option>STAFF</option><option>ELITE</option><option>CORP</option></select></div>
+                                <div class="input-group"><label class="label-pro">Caller Mobile <span style="color:red">*</span></label><input type="text" id="caller_phone" maxlength="11" class="input-pro font-mono"></div>
+                                <div class="input-group"><label class="label-pro">Request Date</label><input type="date" id="req_date" class="input-pro"></div>
+                                <div class="input-group"><label class="label-pro">Reg. Mobile</label><input type="text" id="cust_phone" maxlength="11" class="input-pro font-mono"></div>
+                                <div class="input-group"><label class="label-pro">Branch</label><select id="home_branch" class="input-pro branch-list"></select></div>
+                                
+                                <div class="mails-only complaint-only hidden input-group"><label class="label-pro">National ID</label><input type="text" id="nat_id" maxlength="14" class="input-pro font-mono"></div>
+                                <div class="dispute-only hidden input-group"><label class="label-pro">Dispute Branch</label><select id="disp_branch" class="input-pro branch-list"></select></div>
+                            </div>
+
+                            <div class="request-only hidden" style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
+                                <div class="section-title" style="margin-bottom: 0.5rem;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Request Details</div>
+                                <div class="input-group" style="width: 40%;">
+                                    <label class="label-pro">Request Type <span style="color:red">*</span></label>
+                                    <select id="main_request_type" class="input-pro" onchange="handleMainRequestChange()">
+                                        <option value="">Select Request Type...</option>
+                                        <option value="Online Limit">Online Limit (E-Comm)</option>
+                                        <option value="Travel Note">Travel Note</option>
+                                        <option value="Card Replacement">Card Replacement</option>
+                                        <option value="Reset PIN">Reset PIN</option>
+                                        <option value="Suffix">Add & Edit Suffix</option>
+                                        <option value="Remove Rule">Remove Rule</option>
+                                        <option value="SMS Mod">SMS Modification</option>
+                                        <option value="CC Referral">CC Referral</option>
+                                        <option value="Activation">Resent Activation Code</option>
+                                        <option value="Fraud">Fraud Suspicious</option>
+                                        <option value="CC_Install">CC Installment Request</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="card-only hidden" style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
+                                <div class="section-title"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> Card Information</div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                    <div class="input-group"><label class="label-pro">Card Number</label><input type="text" id="card_num" maxlength="19" placeholder="xxxx xxxx xxxx xxxx" class="input-pro font-mono" style="text-align: center; font-weight: bold; color: var(--scb-blue);"></div>
+                                    <div class="input-group"><label class="label-pro">Card Type</label><select id="card_type" onchange="loadCats()" class="input-pro"><option value="">Select...</option><option value="Debit">Debit Card</option><option value="Credit">Credit Card</option><option value="Prepaid" id="prepaidOpt">Prepaid Card</option></select></div>
+                                    <div class="input-group"><label class="label-pro">Card Category</label><select id="card_cat" onchange="handleCatChange()" class="input-pro"></select></div>
+                                </div>
+                            </div>
+
+                            <div id="travel_limits_box" style="display: none; border: 2px solid; border-radius: 8px; padding: 0.5rem; margin: 0.25rem 0; justify-content: space-around; font-weight: 800; align-items: center; font-size: 0.75rem;">
+                                <div class="flex items-center gap-2"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> <span>POS: </span> <span id="limit_buy">--</span></div>
+                                <div style="width: 2px; height: 15px; background: currentColor; opacity: 0.3;"></div>
+                                <div class="flex items-center gap-2"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg> <span>CASH: </span> <span id="limit_cash">--</span></div>
+                            </div>
+                            <div id="replacement_fee_box" style="display: none; background: #fffbeb; border: 1px solid #f59e0b; border-radius: 8px; padding: 0.5rem; margin: 0.25rem 0; color: #b45309; font-weight: 800; justify-content: center; gap: 0.75rem; font-size: 0.75rem;">
+                                <svg class="svg-icon" viewBox="0 0 24 24" style="color: #f59e0b;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span>Replacement Fee: </span> <span id="rep_fee_amt">--</span>
+                            </div>
+
+                            <div class="complaint-only hidden" style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
+                                <div class="section-title"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Complaint Details</div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                    <div class="input-group"><label class="label-pro">Entity Name</label><select id="comp_entity" class="input-pro branch-list"></select></div>
+                                    <div class="input-group"><label class="label-pro">Branch Ticket (Optional)</label><input type="text" id="comp_ticket" class="input-pro font-mono"></div>
+                                    <div class="input-group"><label class="label-pro">Visit Date</label><input type="date" id="visit_date" class="input-pro"></div>
+                                    <div class="input-group" style="grid-column: span 2;"><label class="label-pro">Complaint Details</label><textarea id="comp_details" rows="2" class="input-pro" placeholder="Details..."></textarea></div>
+                                    <div class="input-group"><label class="label-pro">Action Required</label><textarea id="comp_action" rows="2" class="input-pro" placeholder="Action..."></textarea></div>
+                                </div>
+                            </div>
+
+                            <div class="dispute-only hidden" style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
+                                <div class="section-title" style="margin-bottom: 0.5rem;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Dispute Details</div>
+                                <div class="input-group" style="width: 40%;">
+                                    <label class="label-pro">Dispute Request Type <span style="color:red">*</span></label>
+                                    <select id="dispute_type" class="input-pro" onchange="handleDisputeChange()">
+                                        <option value="">Select Dispute Type...</option>
+                                        <option value="Dispute Request - ATM Cash Dispute">ATM Cash Dispute</option>
+                                        <option value="Dispute Request - ATM Deposit Dispute">ATM Deposit Dispute</option>
+                                        <option value="Dispute Request - POS & Online Trx Dispute">POS & Online Trx Dispute</option>
+                                        <option value="Dispute Request - Release Hold Dispute">Release Hold Dispute</option>
+                                        <option value="Dispute Request - E-Wallet ATM Cash Out">E-Wallet ATM Cash Out</option>
+                                        <option value="Dispute Request - E-Wallet ATM Deposit">E-Wallet ATM Deposit</option>
+                                        <option value="Dispute Request - E-Wallet Purchase - Fawry Services">E-Wallet Purchase - Fawry Services</option>
+                                        <option value="Dispute Request - E-banking Transaction Dispute">E-banking Transaction Dispute</option>
+                                        <option value="Dispute Request - InstaPay Dispute">InstaPay Dispute</option>
+                                        <option value="Dispute Request - ATM Operator">ATM Operator</option>
+                                    </select>
+                                </div>
+                               <div id="dispute_dynamic_fields" style="display: none; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+                                    <div class="input-group disp-fld disp-card hidden"><label class="label-pro">Masked Card Num</label><input type="text" id="disp_card_num" class="input-pro font-mono"></div>
+                                    <div class="input-group disp-fld disp-sub-mobile hidden"><label class="label-pro">Subscribed Mobile Num</label><input type="text" id="disp_sub_mobile" class="input-pro font-mono"></div>
+                                    
+                                    <div class="input-group disp-fld disp-rrn hidden"><label class="label-pro">RRN</label><input type="text" id="disp_rrn" class="input-pro font-mono"></div>
+                                    <div class="input-group disp-fld disp-auth hidden"><label class="label-pro">Authorization Num</label><input type="text" id="disp_auth_num" class="input-pro font-mono"></div>
+                                    <div class="input-group disp-fld disp-trx-ref hidden"><label class="label-pro">Transaction Ref / Ref No</label><input type="text" id="disp_trx_ref" class="input-pro font-mono"></div>
+                                    <div class="input-group disp-fld disp-ft-id hidden"><label class="label-pro">FT ID / Reference</label><input type="text" id="disp_ft_id" class="input-pro font-mono"></div>
+                                    
+                                    <div class="input-group disp-fld disp-trx-date hidden"><label class="label-pro">Transaction Date</label><input type="date" id="disp_trx_date" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-trx-amt hidden"><label class="label-pro">Transaction Amount</label><input type="number" id="disp_trx_amt" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-disp-amt hidden"><label class="label-pro">Dispute Amount</label><input type="number" id="disp_disp_amt" class="input-pro"></div>
+                                    
+                                    <div class="input-group disp-fld disp-merch hidden"><label class="label-pro">Merchant Name</label><input type="text" id="disp_merch" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-atm-data hidden"><label class="label-pro">ATM Data</label><input type="text" id="disp_atm_data" class="input-pro"></div>
+                                    
+                                    <div class="input-group disp-fld disp-ledger hidden"><label class="label-pro">Ledger (Debited/Credited)</label><input type="text" id="disp_ledger" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-aclk hidden"><label class="label-pro">ACLK Num</label><input type="text" id="disp_aclk" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-denom hidden"><label class="label-pro">Denomination (فئات المبلغ)</label><input type="text" id="disp_denom" class="input-pro"></div>
+
+                                    <div class="input-group disp-fld disp-transfer-method hidden"><label class="label-pro">Transfer Method</label><input type="text" id="disp_method" class="input-pro" placeholder="Acc/Card/IPA"></div>
+                                    <div class="input-group disp-fld disp-payee-ipa hidden"><label class="label-pro">Payee IPA</label><input type="text" id="disp_ipa" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-ben-info hidden" style="grid-column: span 2;"><label class="label-pro">Beneficiary Info (Name/Acc)</label><input type="text" id="disp_ben" class="input-pro"></div>
+
+                                    <div class="input-group disp-fld disp-desc hidden" style="grid-column: 1 / -1;"><label class="label-pro">Description / Reason </label><textarea id="disp_desc" rows="1" class="input-pro" style="height:40px;"></textarea></div>
+                                    <div class="input-group disp-fld disp-iban hidden" style="grid-column: span 2;"><label class="label-pro">IBAN (رقم الحساب الدولي)</label><input type="text" id="disp_iban" class="input-pro font-mono"></div>
+                                    <div class="input-group disp-fld disp-bank-name hidden"><label class="label-pro">Bank Name (اسم البنك)</label><input type="text" id="disp_bank_name" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-country hidden"><label class="label-pro">Country (الدولة)</label><input type="text" id="disp_atm_country" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-denom-val hidden" style="grid-column: span 2;"><label class="label-pro">Value & Denominations (المبلغ والفئات)</label><input type="text" id="disp_denom_val" class="input-pro" placeholder="e.g. 2000 EGP (4x500)"></div>
+                                    <div class="input-group disp-fld disp-datetime hidden"><label class="label-pro">Date & Time (التاريخ والوقت)</label><input type="datetime-local" id="disp_datetime" class="input-pro"></div>
+                                    <div class="input-group disp-fld disp-atm-id hidden"><label class="label-pro">ATM ID (رقم الماكينة)</label><input type="text" id="disp_atm_id" class="input-pro font-mono"></div>
+                                </div>
+                            </div>
+
+                            <div class="specifics-section">
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                                    <div class="limit-only hidden input-group"><label class="label-pro">Requested Limit</label><input type="number" id="req_limit" oninput="checkLimitMax()" class="input-pro font-bold"><span id="limit_error" style="font-size: 0.6rem; font-weight: bold; color: var(--danger); display: block; margin-top: 2px; height: 10px;"></span></div>
+                                    <div class="limit-only hidden input-group"><label class="label-pro">Activation Date</label><input type="date" id="activation_date" class="input-pro"></div>
+                                    <div class="limit-only hidden input-group"><label class="label-pro">Expiry Mode</label><div class="radio-group"><label><input type="radio" name="expiry_mode" value="date" checked onchange="toggleExpiry()" class="hidden"><span>Date</span></label><label><input type="radio" name="expiry_mode" value="open" onchange="toggleExpiry()" class="hidden"><span>Open</span></label></div></div>
+                                    <div class="limit-only hidden input-group" id="expiry_date_div"><label class="label-pro">Expiry Date</label><input type="date" id="expiry_date" class="input-pro"></div>
+
+                                    <div class="travel-only hidden input-group"><label class="label-pro">International Num</label><input type="text" id="intl_phone" class="input-pro font-mono"></div>
+                                    <div class="travel-only hidden input-group"><label class="label-pro">Destination</label><input list="country_list" id="country_in" class="input-pro"><datalist id="country_list"></datalist></div>
+                                    <div class="travel-only hidden input-group"><label class="label-pro">From Date</label><input type="date" id="d_date" class="input-pro"></div>
+                                    <div class="travel-only hidden input-group"><label class="label-pro">To Date</label><input type="date" id="r_date" class="input-pro"></div>
+
+                                    <div class="replacement-only hidden input-group"><label class="label-pro">Reason</label><select id="replace_reason" class="input-pro"><option>Lost</option><option>Stolen</option><option>Damaged</option><option>Captured</option></select></div>
+                                    <div class="replacement-only hidden input-group"><label class="label-pro">Pickup Branch</label><select id="pickup_branch" class="input-pro branch-list"></select></div>
+
+                                    <div class="mails-only hidden input-group"><label class="label-pro">Branch Code</label><input type="text" id="branch_code" class="input-pro font-mono"></div>
+                                    <div class="mails-only hidden input-group" style="grid-column: span 2;"><label class="label-pro">Inquiry Subject</label><select id="inquiry_type" class="input-pro"><option>SpotLight Issue</option><option>Spotlight corp. Issue</option><option>Data Modification</option><option>Account Hold</option><option>Delivery Card</option><option>Account Status</option><option>Card Status</option><option>ATM Operator</option><option>Update KYC</option></select></div>
+                                    <div class="mails-only hidden input-group" style="grid-column: 1 / -1;"><label class="label-pro">Description</label><textarea id="inquiry_desc" rows="1" class="input-pro" placeholder="Details..." style="height:30px;"></textarea></div>
+                                    <div class="suffix-only hidden input-group"><label class="label-pro">Suffix Number</label><input type="text" id="suffix_num" class="input-pro font-mono"></div>
+                                    <div class="suffix-only hidden input-group"><label class="label-pro">Suffix Type</label><select id="suffix_type" class="input-pro"><option>Saving</option><option>Current</option><option>Credit</option></select></div>
+                                    <div class="suffix-only hidden input-group"><label class="label-pro">Primary Account Type</label><select id="p_acc_type" class="input-pro"><option>Saving</option><option>Current</option><option>Credit</option></select></div>
+
+                                    <div class="rule-only hidden input-group"><label class="label-pro">Rule Type</label><select id="rule_type" class="input-pro"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+                                    <div class="rule-only hidden input-group"><label class="label-pro">Removal Duration</label><input type="text" id="rule_duration" class="input-pro" placeholder="e.g. 2 Hours"></div>
+
+                                    <div class="cc-ref-only hidden input-group" style="grid-column: span 2;"><label class="label-pro">Transaction Description</label><textarea id="trx_desc" class="input-pro" rows="1"></textarea></div>
+
+                                    <div class="activation-only hidden input-group"><label class="label-pro">Username</label><input type="text" id="web_user" class="input-pro"></div>
+                                    <div class="activation-only hidden input-group"><label class="label-pro">User Type</label><select id="user_type" class="input-pro"><option>Viewer</option><option>Super</option></select></div>
+
+                                    <div class="fraud-only hidden input-group" style="grid-column: 1 / -1;"><label class="label-pro">Fraud Transaction Details</label><textarea id="fraud_details" class="input-pro" rows="2" placeholder="Write full details..."></textarea></div>
+                                    <div class="cc-install-only hidden input-group"><label class="label-pro">Transaction Type</label><select id="inst_trx_type" class="input-pro"><option>POS</option><option>Cash</option></select></div>
+                                    <div class="cc-install-only hidden input-group"><label class="label-pro">Tenor (Months)</label><select id="inst_tenor" class="input-pro"><option>3</option><option>6</option><option>9</option><option>12</option><option>15</option><option>18</option></select></div>
+                                    <div class="cc-install-only hidden input-group"><label class="label-pro">Transaction Date</label><input type="date" id="inst_trx_date" class="input-pro"></div>
+                                    <div class="cc-install-only hidden input-group"><label class="label-pro">Transaction Amount</label><input type="number" id="inst_trx_amt" class="input-pro" placeholder="0.00"></div>
+                                    <div class="cc-install-only hidden input-group" style="grid-column: span 2;"><label class="label-pro">Reference Number</label><input type="text" id="inst_ref_num" class="input-pro font-mono"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem; display: flex; gap: 0.75rem;">
+                            <button type="button" onclick="openQA()" class="btn btn-primary" style="flex: 2;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> VERIFY & COPY</button>
+                            <button type="button" onclick="sendOutlook()" class="btn btn-outline" style="flex: 1;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> OUTLOOK</button>
+                            <button type="button" onclick="resetForm()" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);" title="Clear Form"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            <div id="employees" class="section">
-                <h2>إدارة بيانات الموظفين</h2>
-                <div id="employeeAlert" class="alert"></div>
-
-                <form id="employeeForm">
-                    <h3>إضافة موظف جديد</h3>
-                    <label for="empID">رقم الموظف:</label>
-                    <input type="number" id="empID" required>
-
-                    <label for="empName">اسم الموظف:</label>
-                    <input type="text" id="empName" required>
-
-                    <label for="empSalary">الراتب الشهري الإجمالي:</label>
-                    <input type="number" id="empSalary" required>
-
-                    <label for="initialLeave">رصيد الإجازات السنوية المبدئي:</label>
-                    <input type="number" id="initialLeave" value="21" required>
-
-                    <button type="submit">إضافة الموظف</button>
-                </form>
-
-                <h3>قائمة الموظفين</h3>
-                <table id="employeeTable">
-                    <thead>
-                        <tr>
-                            <th>الرقم</th>
-                            <th>الاسم</th>
-                            <th>الراتب الإجمالي</th>
-                            <th>رصيد الإجازات المتبقي</th>
-                            <th>الراتب اليومي</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
+            <div id="soonView" class="view container">
+                <div class="soon-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <h2>Feature in Development</h2>
+                    <p style="margin-top: 0.5rem;">This section is currently being built and will be available in the next update.</p>
+                </div>
             </div>
+            <div id="loansView" class="view container">
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; width: 100%; overflow-y: auto; padding-bottom: 2rem;">
 
-            <div id="leave-absence" class="section">
-                <h2>سجل الإجازات والغيابات</h2>
-                <div id="leaveAlert" class="alert"></div>
-
-                <form id="leaveForm">
-                    <h3>تسجيل حركة جديدة</h3>
-                    <label for="leaveEmpID">رقم الموظف:</label>
-                    <input type="number" id="leaveEmpID" required>
-
-                    <label for="leaveType">نوع الحركة:</label>
-                    <select id="leaveType" required>
-                        <option value="annual">إجازة سنوية</option>
-                        <option value="sick">إجازة مرضية</option>
-                        <option value="unpaid">غياب/إجازة بدون أجر</option>
+        <div style="background: var(--card-bg); border: 2px solid var(--scb-blue); border-radius: 10px; padding: 1.2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div class="section-title" style="color: var(--scb-blue); font-size: 0.85rem;"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> CC Installment Plan</div>
+            <div class="input-group">
+                <label class="label-pro">Transaction Amount (EGP)</label>
+                <input type="number" id="cc_amount" class="input-pro font-bold" placeholder="0.00" oninput="calculateCC()">
+            </div>
+            <div class="input-group" style="margin-top: 0.8rem;">
+                <label class="label-pro">Tenor (Months)</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <select id="cc_tenor" class="input-pro" onchange="calculateCC()" style="font-weight: bold; color: var(--scb-blue); flex: 1;">
+                        <option value="3">3 Months</option>
+                        <option value="6">6 Months</option>
+                        <option value="9">9 Months</option>
+                        <option value="12">12 Months</option>
+                        <option value="15">15 Months</option>
+                        <option value="18">18 Months</option>
                     </select>
-
-                    <label for="leaveDays">عدد الأيام:</label>
-                    <input type="number" id="leaveDays" min="1" required>
-
-                    <button type="submit">تسجيل الحركة</button>
-                </form>
-
-                <h3>سجل الحركات</h3>
-                <table id="leaveLogTable">
-                    <thead>
-                        <tr>
-                            <th>رقم الموظف</th>
-                            <th>الاسم</th>
-                            <th>النوع</th>
-                            <th>الأيام</th>
-                            <th>التاريخ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
+                    <span id="cc_rate_badge" style="background: var(--scb-light); color: var(--scb-blue); padding: 0.35rem 0.6rem; border-radius: 6px; font-weight: bold; font-size: 0.8rem; border: 1px solid var(--scb-blue);">5%</span>
+                </div>
             </div>
+            
+            <div style="background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px; padding: 1rem; margin-top: 1rem; color: #065f46;">
+                <div class="flex justify-between" style="margin-bottom: 0.5rem; font-size: 0.8rem;">
+                    <strong>Month 1 (Commission Only):</strong> <span id="cc_comm_out" class="font-mono font-bold">0.00 EGP</span>
+                </div>
+                <div class="flex justify-between" style="margin-bottom: 0.5rem; font-size: 0.8rem;">
+                    <strong>Month 2 to End (Installment):</strong> <span id="cc_inst_out" class="font-mono font-bold">0.00 EGP</span>
+                </div>
+                <div style="height: 1px; background: #10b981; opacity: 0.3; margin: 0.5rem 0;"></div>
+                <div class="flex justify-between" style="font-size: 0.75rem; opacity: 0.8;">
+                    <span>Total Amount to Pay:</span> <span id="cc_total_out">0.00 EGP</span>
+                </div>
+            </div>
+        </div>
 
-            <div id="payroll" class="section">
-                <h2>احتساب المرتبات</h2>
-                <button onclick="calculatePayroll()">إجراء احتساب المرتبات الشهرية</button>
+        <div style="background: var(--card-bg); border: 1px solid #f59e0b; border-radius: 10px; padding: 1.2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <div class="section-title" style="color: #d97706;"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Early Settlement Tool</div>
+            <div class="input-group">
+                <label class="label-pro">Remaining Principal (EGP)</label>
+                <input type="number" id="settle_amount" class="input-pro font-bold" oninput="calculateSettlement()">
+            </div>
+            <div class="input-group" style="margin-top: 0.8rem;">
+                <label class="label-pro">Settlement Fee (%)</label>
+                <input type="number" id="settle_rate" class="input-pro font-bold" placeholder="e.g. 5" oninput="calculateSettlement()">
+            </div>
+            
+            <div style="margin-top: 1.5rem; background: #fffbeb; border: 1px solid #fcd34d; padding: 1rem; border-radius: 8px;">
+                <div class="flex justify-between items-center" style="margin-bottom: 0.5rem; font-size: 0.8rem; color: #b45309;">
+                    <span>Settlement Fee Amount:</span> <span id="settle_fee_out" class="font-mono font-bold">0.00 EGP</span>
+                </div>
+                <div style="height: 1px; background: #fcd34d; margin: 0.5rem 0;"></div>
+                <div class="flex justify-between items-center" style="font-size: 0.9rem; font-weight: 800; color: #d97706;">
+                    <span>Total Required to Close:</span> <span id="settle_total_out" class="font-mono">0.00 EGP</span>
+                </div>
+            </div>
+        </div>
 
-                <h3>كشف المرتبات للشهر الحالي</h3>
-                <table id="payrollTable">
-                    <thead>
-                        <tr>
-                            <th>الرقم</th>
-                            <th>الاسم</th>
-                            <th>راتب إجمالي</th>
-                            <th>أيام غياب (بدون أجر)</th>
-                            <th>خصم الغياب</th>
-                            <th>صافي المستحق</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
+        <div style="grid-column: 1 / -1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <div class="section-title"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Personal Loan Calculator</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="input-group"><label class="label-pro">Loan Amount (EGP)</label><input type="number" id="loan_amount" class="input-pro" oninput="calculateLoan()"></div>
+                <div class="input-group"><label class="label-pro">Annual Interest Rate (%)</label><input type="number" id="loan_rate" class="input-pro" value="20" oninput="calculateLoan()"></div>
+                <div class="input-group"><label class="label-pro">Duration (Months)</label><input type="number" id="loan_months" class="input-pro" value="60" oninput="calculateLoan()"></div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div style="background: var(--scb-light); border: 1px solid var(--scb-blue); border-radius: 8px; padding: 1rem; color: var(--scb-blue);">
+                    <div class="flex justify-between" style="margin-bottom: 0.4rem; font-size: 0.8rem;">
+                        <span>Principal per Month (Avg):</span> <span id="loan_prin_out" class="font-mono">0.00 EGP</span>
+                    </div>
+                    <div class="flex justify-between" style="margin-bottom: 0.4rem; font-size: 0.8rem;">
+                        <span>Interest per Month (Avg):</span> <span id="loan_int_mo_out" class="font-mono">0.00 EGP</span>
+                    </div>
+                    <div style="height: 1px; background: var(--scb-blue); opacity: 0.2; margin: 0.5rem 0;"></div>
+                    <div class="flex justify-between items-center">
+                        <strong>Total Monthly EMI:</strong> <span id="loan_emi_out" class="font-mono font-bold" style="font-size: 1.1rem;">0.00 EGP</span>
+                    </div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; color: var(--text-main);">
+                    <div class="flex justify-between" style="margin-bottom: 0.4rem; font-size: 0.8rem;">
+                        <span>Loan Amount:</span> <span id="loan_amt_out" class="font-mono">0.00 EGP</span>
+                    </div>
+                    <div class="flex justify-between" style="margin-bottom: 0.4rem; font-size: 0.8rem;">
+                        <span>Total Interest for full term:</span> <span id="loan_int_total_out" class="font-mono">0.00 EGP</span>
+                    </div>
+                    <div style="height: 1px; background: var(--border-color); margin: 0.5rem 0;"></div>
+                    <div class="flex justify-between items-center">
+                        <strong>Total Amount to Pay:</strong> <span id="loan_total_out" class="font-mono font-bold" style="font-size: 1.1rem;">0.00 EGP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div id="tariffView" class="view container">
+    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem; height: 100%; display: flex; flex-direction: column;">
+        
+        <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="flex: 1;">
+                <label class="label-pro">Select Service Category</label>
+                <select id="tariff_selector" class="input-pro" onchange="loadTariffPDF()" style="height: 45px; font-size: 1rem; border: 2px solid var(--scb-blue); font-weight: bold; color: var(--scb-blue);">
+                    <option value="">-- Choose Category --</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/%D8%A7%D9%84%D8%AD%D8%B3%D8%A7%D8%A8%D8%A7%D8%AA.pdf">ACCOUNTS</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D9%85%D9%84%D8%A7%D8%AA_%D8%A7%D9%84%D9%86%D9%82%D8%AF%D9%8A%D9%87_%D9%88%D8%A7%D9%84%D8%AE%D8%B2%D8%A7%D8%A6%D9%86.pdf">TRANSACTIONS</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/Debit_Cards_Arabic.pdf">DEBIT & PREPAID CARDS</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/Credit_Cards_Arabic.pdf">CREDIT CARDS</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/Loans_Ar.pdf">LOANS</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/Loans_Ar.pdf">TRANSFERS</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/%D8%A7%D9%84%D8%B4%D9%8A%D9%83%D8%A7%D8%AA-%D9%84%D9%84%D8%A3%D9%81%D8%B1%D8%A7%D8%AF_merged.pdf">CHECKS (الشيكات)</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/%D8%A7%D9%84%D8%AE%D8%AF%D9%85%D8%A7%D8%AA-%D8%A7%D9%84%D8%A7%D9%84%D9%83%D8%AA%D8%B1%D9%88%D9%86%D9%8A%D8%A9.pdf">E-BANKING SERVICES</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/edit-%D8%A7%D9%84%D8%B4%D9%82%D9%88%D9%84-%D8%A7%D9%84%D9%85%D8%A7%D9%84%D9%8A.pdf">FINANCIAL INCLUSION</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/Custody_Ar.pdf">CUSTODY FEES/CHARGES</option>
+                    <option value="https://scbank.com.eg/Products_PDF/AR/ELITE.pdf">ELITE TARIFF</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/Beyond_Arabic.pdf">BEYOND YOUTH TARIFF</option>
+                    <option value="https://scbank.com.eg/PDF/Tariff/%D8%A7%D9%84%D8%B4%D8%B1%D9%88%D8%B7-%D8%A7%D9%84%D8%B9%D8%A7%D9%85%D8%A9.pdf">TERMS AND CONDITIONS</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-outline" onclick="openTariffExternal()" style="margin-top: 1.2rem; height: 45px;">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </button>
+        </div>
+
+        <div id="pdf_container" style="flex: 1; border: 2px dashed var(--border-color); border-radius: 8px; overflow: hidden; background: var(--input-bg); position: relative;">
+            <div id="pdf_placeholder" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); text-align: center; padding: 2rem;">
+                <svg style="width: 80px; height: 80px; opacity: 0.2; margin-bottom: 1rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <p>Please select a category above to view the Tariff PDF within the system.</p>
+            </div>
+            <iframe id="tariff_frame" src="" style="width: 100%; height: 100%; border: none; display: none;"></iframe>
+        </div>
+    </div>
+</div>
+        </main>
+    </div>
+
+    <div id="qaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <svg style="width: 40px; height: 40px; margin: 0 auto 0.5rem auto;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><polyline points="9 14 12 17 19 10"></polyline></svg>
+                <h2 style="font-size: 1.1rem; text-transform: uppercase;">Quality Check</h2>
+            </div>
+            <div class="modal-body">
+                <div id="qaList" style="margin-bottom: 1rem;"></div>
+                <div class="flex gap-2">
+                    <button onclick="closeQA()" class="btn btn-outline" style="flex: 1;">Dismiss</button>
+                    <button id="finalBtn" disabled onclick="copyData()" class="btn btn-primary" style="flex: 2;">SECURE COPY</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <div id="copy-buffer" style="position: absolute; left: -9999px;"></div>
+
     <script>
-        /*
-        ========================================
-        JavaScript (للوظائف والحسابات)
-        ========================================
-        */
+        // --- Data ---
+        let currentMission = "";
+        let isLimitValid = true;
 
-        // قاعدة بيانات مبسطة (مصفوفة من الكائنات)
-        let employees = [];
-        let leaveLog = [];
+        const countries = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Democratic Republic of the Congo", "Costa Rica", "Côte d’Ivoire", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "North Korea", "South Korea", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"];
+        const scbBranches = [
+            "Garden City (Head Office)", "Downtown Cairo", "Dokki", "Tahrir – Dokki", "Mohandesseen", "Sphinx – Mohandesseen", "Agouza – Syria Street", "Giza", "Mourad Street", "Heliopolis", "Almazah", "Orouba", "Nasr City", "Maadi", "New Cairo", "New Cairo Second District", "Shobra", "Fostat", "Smash Club Branch", "Madinaty", "6th October University", "Alexandria Main Branch", "Smouha", "Amreya Free Zone", "Suez", "Ismailia", "Port Said", "Damietta New", "Mansoura", "Tanta", "Zagazig", "Banha", "Shibin El-Kom", "Kafr El-Sheikh", "Damanhour", "Minya", "Beni Suef", "Fayoum", "Assiut", "Sohag", "Qena", "Luxor", "Aswan", "Hurghada", "Sharm El Sheikh", "Ain Sokhna", "Obour", "10th of Ramadan", "New Administrative Capital", "Sheikh Zayed", "Smart Village", "Katameya", "Rehab"
+        ];
+        
+        const travelLimits = {
+            'Visa Signature': { buy: '500,000', cash: '5,000', color: '#0369a1' }, 'Visa Platinum': { buy: '300,000', cash: '3,000', color: '#334155' }, 'Platinum DMC': { buy: '300,000', cash: '3,000', color: '#475569' }, 'Master Titanium': { buy: '150,000', cash: '1,500', color: '#0f172a' },
+            'Meeza Debit': { buy: 'Local Only', cash: '0', color: '#ef4444' }, 'Master Classic': { buy: '100,000', cash: '1,000', color: '#64748b' }, 'Master Platinum': { buy: '300,000', cash: '3,000', color: '#1e293b' },
+            'visa Signature': { buy: '500,000', cash: '5,000', color: '#0369a1' }, 'visa Platinum': { buy: '300,000', cash: '3,000', color: '#334155' }, 'Mastercard Platinum': { buy: '350,000', cash: '3,500', color: '#1e293b' }, 'Mastercard Titanium': { buy: '200,000', cash: '2,000', color: '#0f172a' },
+            'visa Gold': { buy: '120,000', cash: '1,200', color: '#b45309' }, 'visa Classic': { buy: '60,000', cash: '1,000', color: '#64748b' }, 'Mastercard Classic': { buy: '60,000', cash: '1,000', color: '#64748b' }, 'Prepaid': { buy: '50,000', cash: '500', color: '#7c3aed' }
+        };
 
-        // 1. وظيفة التنقل بين الأقسام
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // إزالة التنشيط من جميع العناصر
-                document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-                document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        const replacementFees = {
+            'Visa Signature': '1,000 EGP', 'Visa Platinum': '750 EGP', 'Platinum DMC': '750 EGP', 'Master Titanium': '500 EGP', 'Meeza Debit': '100 EGP', 'Master Classic': '300 EGP',
+            'Master Platinum': '750 EGP', 'visa Signature': '1,000 EGP', 'visa Platinum': '750 EGP', 'Mastercard Platinum': '750 EGP', 'Mastercard Titanium': '500 EGP', 'visa Gold': '400 EGP',
+            'visa Classic': '300 EGP', 'Mastercard Classic': '300 EGP', 'Prepaid': '150 EGP'
+        };
 
-                // تنشيط العنصر المختار والقسم المستهدف
-                this.classList.add('active');
-                const targetId = this.getAttribute('data-target');
-                document.getElementById(targetId).classList.add('active');
-
-                // تحديث لوحة القيادة عند التبديل
-                if (targetId === 'dashboard') {
-                    updateDashboard();
-                }
+       function init() {
+            const countryList = document.getElementById('country_list');
+            countries.sort().forEach(c => { 
+                const opt = document.createElement('option'); 
+                opt.value = c; 
+                countryList.appendChild(opt); 
             });
-        });
 
-        // 2. وظيفة إضافة موظف جديد
-        document.getElementById('employeeForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const id = document.getElementById('empID').value;
-            const name = document.getElementById('empName').value;
-            const salary = parseFloat(document.getElementById('empSalary').value);
-            const initialLeave = parseInt(document.getElementById('initialLeave').value);
+            document.querySelectorAll('.branch-list').forEach(dropdown => {
+                dropdown.innerHTML = '<option value="">Select...</option>';
+                scbBranches.forEach(b => dropdown.add(new Option(b, b)));
+            });
 
-            if (employees.some(emp => emp.id === id)) {
-                alert("هذا الرقم الوظيفي موجود بالفعل!");
+            document.getElementById('acc_num').addEventListener('input', function (e) {
+                e.target.value = e.target.value.replace(/[^\d]/g, '');
+            });
+
+            const formatCard = (e) => {
+                let val = e.target.value.replace(/[^\d]/g, '');
+                if (val.length > 16) { val = val.substring(0, 16); }
+                e.target.value = val.replace(/(.{4})/g, '$1 ').trim();
+            };
+
+            document.getElementById('card_num').addEventListener('input', formatCard);
+            document.getElementById('disp_card_num').addEventListener('input', formatCard);
+
+            if(document.getElementById('activation_date')) {
+                document.getElementById('activation_date').valueAsDate = new Date();
+            }
+            if(document.getElementById('req_date')) {
+                document.getElementById('req_date').valueAsDate = new Date();
+            }
+
+            setInterval(() => { 
+                document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); 
+            }, 1000);
+        }
+
+        function enterMission() {
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => { 
+                document.getElementById('splash').style.display = 'none'; 
+                init(); 
+                switchTab('requests');
+            }, 500);
+        }
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark');
+            const icon = document.getElementById('themeIcon');
+            if(isDark) { icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>'; } 
+            else { icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>'; }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+
+            if(tabId === 'requests') {
+                document.getElementById('formView').classList.add('active');
+                document.getElementById('mainTitle').innerText = "General Requests";
+                document.getElementById('subTitle').innerText = "Submit a New Request";
+                openFormMode('Requests');
+            } 
+            else if(tabId === 'mails') {
+                document.getElementById('formView').classList.add('active');
+                document.getElementById('mainTitle').innerText = "Mails Request";
+                document.getElementById('subTitle').innerText = "Submit a new ticket";
+                openFormMode('Mails');
+            } 
+            else if(tabId === 'complaint') {
+                document.getElementById('formView').classList.add('active');
+                document.getElementById('mainTitle').innerText = "Complaints Management";
+                document.getElementById('subTitle').innerText = "Submit a New Complaint";
+                openFormMode('Complaint');
+            }
+            else if(tabId === 'disputes') {
+                document.getElementById('formView').classList.add('active');
+                document.getElementById('mainTitle').innerText = "Disputes Management";
+                document.getElementById('subTitle').innerText = "Submit a New Dispute";
+                openFormMode('Disputes');
+            }
+            else if(tabId === 'loans') {
+                document.getElementById('loansView').classList.add('active');
+                document.getElementById('mainTitle').innerText = "Loan & Installments";
+                document.getElementById('subTitle').innerText = "Calculators & Tools";
+            }
+            else if(tabId === 'tariff') {
+                document.getElementById('tariffView').classList.add('active');
+                document.getElementById('mainTitle').innerText = "Tariff Guide";
+                document.getElementById('subTitle').innerText = "Fees & Commissions Documents";
+            }
+        }
+
+        function openFormMode(mode) {
+    resetForm();
+    if(document.getElementById('req_date')) document.getElementById('req_date').valueAsDate = new Date();
+
+    // السطر ده هو "المكنسة" - ضفنا فيه كل أسامي الطلبات الجديدة
+    document.querySelectorAll('.request-only, .travel-only, .replacement-only, .mails-only, .card-only, .branch-field, .limit-only, .complaint-only, .dispute-only, .suffix-only, .rule-only, .cc-ref-only, .activation-only, .fraud-only, .cc-install-only').forEach(el => el.classList.add('hidden'));
+    
+    document.getElementById('travel_limits_box').style.display = 'none';
+    document.getElementById('replacement_fee_box').style.display = 'none';
+    document.getElementById('prepaidOpt').classList.remove('hidden');
+
+    if(mode === 'Requests') {
+        currentMission = ''; 
+        document.querySelectorAll('.request-only').forEach(el => el.classList.remove('hidden'));
+    }
+    else if(mode === 'Mails') { 
+        currentMission = 'Mails';
+        document.querySelectorAll('.mails-only').forEach(el => el.classList.remove('hidden')); 
+    } 
+    else if(mode === 'Complaint') { 
+        currentMission = 'Complaint';
+        document.querySelectorAll('.complaint-only').forEach(el => el.classList.remove('hidden')); 
+    }
+    else if(mode === 'Disputes') {
+        currentMission = 'Disputes';
+        document.querySelectorAll('.dispute-only').forEach(el => el.classList.remove('hidden'));
+        document.getElementById('dispute_dynamic_fields').style.display = 'none'; 
+    }
+}
+
+        function handleMainRequestChange() {
+                const type = document.getElementById('main_request_type').value;
+                currentMission = type;
+                
+                // إخفاء كل شيء أولاً
+                document.querySelectorAll('.travel-only, .replacement-only, .card-only, .limit-only, .suffix-only, .rule-only, .cc-ref-only, .activation-only, .fraud-only, .cc-install-only, .branch-field').forEach(el => el.classList.add('hidden'));                
+                if(!type) return;
+
+                // إظهار الخانات بناءً على نوع الطلب
+                if(type === 'Online Limit') { document.querySelectorAll('.card-only, .limit-only').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'Travel Note') { document.querySelectorAll('.card-only, .travel-only').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'Card Replacement') { document.querySelectorAll('.card-only, .replacement-only, .branch-field').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'Reset PIN') { document.querySelectorAll('.card-only').forEach(el => el.classList.remove('hidden')); }
+                
+                // الطلبات الجديدة
+                else if(type === 'Suffix') { document.querySelectorAll('.card-only, .suffix-only').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'Remove Rule') { document.querySelectorAll('.card-only, .rule-only').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'SMS Mod') { document.querySelectorAll('.card-only, .branch-field').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'CC Referral') { document.querySelectorAll('.card-only, .cc-ref-only').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'Activation') { document.querySelectorAll('.activation-only').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'Fraud') { document.querySelectorAll('.card-only, .fraud-only').forEach(el => el.classList.remove('hidden')); }
+                else if(type === 'CC_Install') { document.querySelectorAll('.card-only, .cc-install-only').forEach(el => el.classList.remove('hidden')); }
+            }
+
+        function loadCats() {
+            const t = document.getElementById('card_type').value;
+            const c = document.getElementById('card_cat');
+            c.innerHTML = '';
+            const opts = { 
+                'Debit': ['Visa Signature', 'Visa Platinum', 'Platinum DMC', 'Master Titanium', 'Meeza Debit', 'Master Classic', 'Master Platinum'],
+                'Credit': ['visa Signature', 'visa Platinum', 'Mastercard Platinum', 'Mastercard Titanium', 'visa Gold', 'visa Classic', 'Mastercard Classic'], 
+                'Prepaid': ['Prepaid']
+            };
+            if(opts[t]) { opts[t].forEach(o => c.add(new Option(o, o))); }
+            handleCatChange();
+        }
+
+        function handleCatChange() { checkLimitMax(); updateTravelLimits(); updateReplacementFees(); }
+
+        function updateTravelLimits() {
+            const box = document.getElementById('travel_limits_box');
+            if(currentMission !== 'Travel Note') { box.style.display = 'none'; return; }
+            const limit = travelLimits[document.getElementById('card_cat').value];
+            if(limit) {
+                document.getElementById('limit_buy').innerText = limit.buy; document.getElementById('limit_cash').innerText = limit.cash;
+                box.style.display = 'flex'; box.style.backgroundColor = limit.color + '15'; box.style.borderColor = limit.color; box.style.color = limit.color;
+            } else { box.style.display = 'none'; }
+        }
+
+        function updateReplacementFees() {
+            const box = document.getElementById('replacement_fee_box');
+            if(currentMission !== 'Card Replacement') { box.style.display = 'none'; return; }
+            const fee = replacementFees[document.getElementById('card_cat').value];
+            if(fee) { document.getElementById('rep_fee_amt').innerText = fee; box.style.display = 'flex'; } 
+            else { box.style.display = 'none'; }
+        }
+
+        function checkLimitMax() {
+            if(currentMission !== 'Online Limit') { isLimitValid = true; return; }
+            const cat = document.getElementById('card_cat').value;
+            const val = parseFloat(document.getElementById('req_limit').value) || 0;
+            const input = document.getElementById('req_limit'); const err = document.getElementById('limit_error');
+            
+            let max = 0;
+            if(cat.includes('Meeza') || cat.includes('Prepaid')) max = 10000;
+            else if(cat.includes('Classic') || cat.includes('Gold')) max = 50000;
+            else if(cat.includes('Titanium')) max = 90000;
+            else if(cat.includes('Platinum') || cat.includes('DMC')) max = 150000;
+            else if(cat.includes('Signature')) max = 250000;
+
+            if(max > 0 && val > max) { err.innerText = `⛔ Max: ${max.toLocaleString()}`; input.classList.add('input-error'); isLimitValid = false; } 
+            else { err.innerText = max > 0 ? `Max Cap: ${max.toLocaleString()}` : ''; err.style.color = max > 0 && val > max ? 'var(--danger)' : 'var(--text-muted)'; input.classList.remove('input-error'); isLimitValid = true; }
+        }
+
+        function toggleExpiry() {
+            const mode = document.querySelector('input[name="expiry_mode"]:checked').value;
+            const dateDiv = document.getElementById('expiry_date_div');
+            if(mode === 'open') dateDiv.classList.add('hidden'); else dateDiv.classList.remove('hidden');
+        }
+
+        function handleDisputeChange() {
+            const type = document.getElementById('dispute_type').value;
+            const container = document.getElementById('dispute_dynamic_fields');
+            
+            document.querySelectorAll('.disp-fld').forEach(el => el.classList.add('hidden'));
+            
+            if(!type) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'grid';
+
+            const show = (selectors) => {
+                selectors.split(',').forEach(s => {
+                    const el = document.querySelector('.disp-' + s.trim());
+                    if(el) el.classList.remove('hidden');
+                });
+            };
+
+            if(type === 'Dispute Request - ATM Cash Dispute') {
+                show('card, rrn, auth, trx-date, trx-amt, disp-amt, atm-data, ledger, ft-id, desc');
+            } 
+            else if(type === 'Dispute Request - ATM Deposit Dispute') {
+                show('card, trx-date, trx-amt, disp-amt, atm-data, ledger, ft-id, denom, desc');
+            } 
+            else if(type === 'Dispute Request - POS & Online Trx Dispute') {
+                show('card, rrn, auth, trx-date, disp-amt, merch, ledger, ft-id, desc');
+            }
+            else if(type === 'Dispute Request - Release Hold Dispute') {
+                show('card, rrn, auth, trx-date, trx-amt, merch, ledger, aclk, desc');
+            }
+            else if(type === 'Dispute Request - E-Wallet ATM Cash Out') {
+                show('sub-mobile, trx-date, trx-ref, trx-amt, disp-amt, atm-data, desc');
+            }
+            else if(type === 'Dispute Request - E-Wallet ATM Deposit') {
+                show('sub-mobile, trx-date, trx-ref, trx-amt, disp-amt, atm-data, denom, desc');
+            }
+            else if(type === 'Dispute Request - E-Wallet Purchase - Fawry Services') {
+                show('sub-mobile, trx-date, trx-ref, disp-amt, merch, desc');
+            }
+            else if(type === 'Dispute Request - E-banking Transaction Dispute') {
+                show('trx-ref, trx-date, ben-info, ledger, transfer-method, desc');
+            }
+            else if(type === 'Dispute Request - InstaPay Dispute') {
+                show('trx-date, trx-amt, trx-ref, transfer-method, payee-ipa, ft-id, desc');
+            }
+            else if(type === 'Dispute Request - ATM Operator') {
+                show('iban, bank-name, country, denom-val, datetime, atm-id, desc');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('missionForm').reset();
+            if(document.getElementById('req_date')) document.getElementById('req_date').valueAsDate = new Date();
+            document.getElementById('limit_error').innerText = ''; 
+            document.getElementById('req_limit').classList.remove('input-error');
+            document.getElementById('travel_limits_box').style.display = 'none'; 
+            document.getElementById('replacement_fee_box').style.display = 'none';
+            document.getElementById('dispute_dynamic_fields').style.display = 'none';
+            isLimitValid = true; 
+            document.getElementById('card_cat').innerHTML = ''; 
+
+            if(document.getElementById('tab-requests').classList.contains('active')) {
+                handleMainRequestChange();
+            }
+            if(document.getElementById('tab-disputes').classList.contains('active')) {
+                handleDisputeChange();
+            }
+        }
+
+        function maskCard(num) {
+            let clean = num.replace(/\s/g, ''); 
+            if(!clean || clean.length < 16) return clean;
+            return clean.substring(0, 6) + "******" + clean.substring(12);
+        }
+
+        function getFormData() {
+            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+            
+            // الترتيب الجديد في الجدول المنسوخ
+            let d = { 
+                "Ticket": getVal('ticket_num') || "N/A",
+                "Client Name": getVal('cust_name'), 
+                "Account No": getVal('acc_num'), 
+                "Segment": getVal('cust_type'),
+                "Caller Mobile": getVal('caller_phone'), 
+                "Date": getVal('req_date'),
+                "Reg. Mobile": getVal('cust_phone'),
+                "Branch": getVal('home_branch') || getVal('disp_branch') || "N/A"
+            };
+
+            if(currentMission === 'Online Limit') { d["Request"] = "Online Limit"; d["Card No"] = maskCard(getVal('card_num')); d["Card Type"] = getVal('card_cat'); d["Limit"] = getVal('req_limit') + " EGP"; d["Activation"] = getVal('activation_date'); d["Expiry"] = document.querySelector('input[name="expiry_mode"]:checked').value === 'open' ? "Open" : getVal('expiry_date'); }
+            else if(currentMission === 'Travel Note') { d["Request"] = "Travel Note"; d["Card No"] = maskCard(getVal('card_num')); d["Card Type"] = getVal('card_cat'); d["Country"] = getVal('country_in'); d["From"] = getVal('d_date'); d["To"] = getVal('r_date'); }
+            else if(currentMission === 'Card Replacement') { d["Request"] = "Card Replacement"; d["Card No"] = maskCard(getVal('card_num')); d["Card Type"] = getVal('card_cat'); d["Reason"] = getVal('replace_reason'); d["Pickup"] = getVal('pickup_branch'); }
+            else if(currentMission === 'Reset PIN') { d["Request"] = "Reset PIN"; d["Card No"] = maskCard(getVal('card_num')); d["Card Type"] = getVal('card_cat'); }
+            else if(currentMission === 'Suffix') { d["Card No"] = maskCard(getVal('card_num')); d["Suffix #"] = getVal('suffix_num'); d["Suffix Type"] = getVal('suffix_type'); d["Primary Acc"] = getVal('p_acc_type'); }
+            else if(currentMission === 'Remove Rule') { d["Card No"] = maskCard(getVal('card_num')); d["Rule"] = getVal('rule_type'); d["Duration"] = getVal('rule_duration'); }
+            else if(currentMission === 'SMS Mod') { d["Card No"] = maskCard(getVal('card_num')); d["Branch"] = getVal('home_branch'); }
+            else if(currentMission === 'CC Referral') { d["Card No"] = maskCard(getVal('card_num')); d["Trx Desc"] = getVal('trx_desc'); }
+            else if(currentMission === 'Activation') { d["User"] = getVal('web_user'); d["User Type"] = getVal('user_type'); }
+            else if(currentMission === 'Fraud') { d["Card No"] = maskCard(getVal('card_num')); d["Fraud Details"] = getVal('fraud_details'); }
+            else if(currentMission === 'Mails') { d["Request"] = getVal('inquiry_type'); d["National ID"] = getVal('nat_id'); d["Details"] = getVal('inquiry_desc'); }
+            else if(currentMission === 'Complaint') { d["Request"] = "Complaint"; d["National ID"] = getVal('nat_id'); d["Entity"] = getVal('comp_entity'); d["Visit Date"] = getVal('visit_date'); d["Complaint"] = getVal('comp_details'); d["Action Required"] = getVal('comp_action'); }
+            else if(currentMission === 'CC_Install') { 
+                d["Card No"] = maskCard(getVal('card_num')); 
+                d["Trx Type"] = getVal('inst_trx_type'); 
+                d["Tenor"] = getVal('inst_tenor') + " Months"; 
+                d["Trx Date"] = getVal('inst_trx_date'); 
+                d["Amount"] = getVal('inst_trx_amt'); 
+                d["Ref #"] = getVal('inst_ref_num'); 
+            }
+            else if(currentMission === 'Disputes') {
+                d["Request"] = getVal('dispute_type');
+                const activeFields = document.querySelectorAll('#dispute_dynamic_fields .disp-fld:not(.hidden)');
+                activeFields.forEach(field => {
+                    const label = field.querySelector('label').innerText.replace('*','').trim();
+                    const input = field.querySelector('input, textarea');
+                    if(input) { d[label] = input.id === 'disp_card_num' ? maskCard(input.value) : input.value; }
+                });
+            }
+            return d;
+        }
+
+       function openQA() {
+            // 1. التحقق من البيانات الأساسية (نفس الكود القديم)
+            const name = document.getElementById('cust_name').value.trim();
+            const accNum = document.getElementById('acc_num').value.trim();
+            const phone = document.getElementById('caller_phone').value.trim();
+            if (!name || accNum.length === 0 || phone.length !== 11) {
+                alert("⚠️ Please fill Client Identification correctly.\n(Note: Phone must be 11 digits)");
                 return;
             }
 
-            const dailySalary = salary / 30;
+            // 2. تحديد الأسئلة بناءً على نوع الطلب
+            const m = document.getElementById('qaModal');
+            const list = document.getElementById('qaList');
+            let q = [];
 
-            employees.push({
-                id,
-                name,
-                salary,
-                dailySalary: dailySalary.toFixed(2),
-                initialLeave,
-                usedLeave: 0,
-                unpaidAbsence: 0
-            });
-
-            // تحديث الواجهة
-            renderEmployeeTable();
-            document.getElementById('employeeForm').reset();
-            showAlert('employeeAlert', 'تم إضافة الموظف بنجاح.', 'success');
-        });
-
-        // 3. وظيفة تسجيل حركة الإجازة/الغياب
-        document.getElementById('leaveForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const empID = document.getElementById('leaveEmpID').value;
-            const leaveType = document.getElementById('leaveType').value;
-            const days = parseInt(document.getElementById('leaveDays').value);
-
-            const empIndex = employees.findIndex(emp => emp.id === empID);
-
-            if (empIndex === -1) {
-                alert("رقم الموظف غير صحيح!");
-                return;
+            // --- هنا تقدر تعدل أو تضيف أسئلة لأي طلب ---
+            if (currentMission === 'Online Limit') {
+                q = ["Confirmed usage responsibility?", "Confirmed amount & duration?", "Confirmed EGP/Local only?", "Confirm SLA? 2H"];
+            } else if (currentMission === 'Travel Note') {
+                q = ["Provided International Call Center # 19093?", "Explained travel limits?", "Confirmed travel documents?", "Confirm SLA? 2H"];
+            } else if (currentMission === 'Card Replacement') {
+                q = ["Confirmed old card blocking?", "Verified Delivery Branch?", "Explained fees & SLA", "Confirm SLA? 2:3 Working Days"];
+            } else if (currentMission === 'Suffix') {
+                q = ["Confirmed Suffix Type?", "Confirmed Primary Account?", "Confirm SLA? 90 mins"];
+            } else if (currentMission === 'Remove Rule') {
+                q = ["Verified Rule Number (1-5)?", "Confirmed usage responsibility?", "Confirmed transactions?", "Confirm SLA? 2H"];
+            } else if (currentMission === 'SMS Mod') {
+                q = ["Confirmed registered mobile number?", "Confirm SLA? after 80 mins/working day"];
+            } else if (currentMission === 'CC Referral') {
+                q = ["Verified transaction date/amount?", "Confirmed usage responsibility?", "Confirm SLA? 120 mins/working day"];
+            } else if (currentMission === 'Activation') {
+                q = [ "Confirm SLA? 2H"];
+            } else if (currentMission === 'Fraud') {
+                q = ["Reviewed all suspicious transactions?", "Confirm usage responsibility?", "Confirm SLA? 2H"];
+            } else if (currentMission === 'Complaint') {
+                q = ["Captured all details?", "Confirm SLA? 5 working days"];
+            } else if (currentMission === 'Disputes') {
+                q = ["Checked System Details?", "Confirm SLA?"];
+            }else if (document.getElementById('dispute_type').value === 'Dispute Request - ATM Operator') {
+                q = [
+                    "Verified International IBAN and Bank Name?",
+                    "Confirmed Exact Date and Time of transaction?",
+                    "Captured ATM ID and specific cash denominations?",
+                    "Advised customer of International Dispute TAT (Up to 45-60 days)?"
+                ];
+            } else if (currentMission === 'CC_Install') {
+                q = [
+                    "Confirmed installment amount, commission & interest?",
+                    "Confirmed 5% early settlement fee policy?",
+                    "confirm SLA 1 working day?"
+                ];
+            } else {
+                // قائمة عامة لأي طلب آخر
+                q = ["Verified Customer Identity & Checked System Details?"];
             }
 
-            const employee = employees[empIndex];
+            // بناء القائمة في الشاشة
+            list.innerHTML = q.map((text) => `
+                <label class="qa-item">
+                    <input type="checkbox" class="qa-chk" onchange="validateQA()">
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">${text}</span>
+                </label>
+            `).join('');
 
-            // تحديث رصيد الموظف
-            if (leaveType === 'annual') {
-                if (employee.initialLeave - employee.usedLeave < days) {
-                    alert(`الرصيد المتبقي لإجازة ${employee.name} هو ${employee.initialLeave - employee.usedLeave} يوم فقط.`);
-                    return;
+            m.classList.add('active');
+            validateQA();
+        }
+
+        function closeQA() { document.getElementById('qaModal').classList.remove('active'); }
+        function validateQA() { const all = Array.from(document.querySelectorAll('.qa-chk')).every(x => x.checked); document.getElementById('finalBtn').disabled = !all; }
+
+        function copyData() {
+            const d = getFormData();
+            let table = `<table border="1" style="border-collapse:collapse; font-family:sans-serif; font-size:12px;">
+                <tr style="background:#0033a0; color:white;">${Object.keys(d).map(k=>`<th style="padding:8px; border:1px solid #ddd;">${k}</th>`).join('')}</tr>
+                <tr>${Object.values(d).map(v=>`<td style="padding:8px; border:1px solid #ddd;">${v}</td>`).join('')}</tr>
+            </table>`;
+            try {
+                const buffer = document.getElementById('copy-buffer'); buffer.innerHTML = table;
+                const range = document.createRange(); range.selectNode(buffer);
+                window.getSelection().removeAllRanges(); window.getSelection().addRange(range);
+                document.execCommand('copy');
+                const btn = document.getElementById('finalBtn'); const orig = btn.innerHTML;
+                btn.innerHTML = 'COPIED!'; btn.style.backgroundColor = 'var(--success)';
+                setTimeout(() => { closeQA(); btn.innerHTML = orig; btn.style.backgroundColor = ''; }, 1000);
+            } catch(e) { alert("Copy failed."); }
+        }
+
+        // --- OUTLOOK MAILER ---
+        function handleRequestsOutlook(phone, acc) {
+            const ticket = document.getElementById('ticket_num').value || 'N/A';
+            const name = document.getElementById('cust_name').value || "N/A";
+            const date = document.getElementById('req_date').value || "N/A";
+            const segment = document.getElementById('cust_type').value || "N/A";
+            const regPhone = document.getElementById('cust_phone').value || "N/A";
+            const branch = document.getElementById('home_branch').value || "N/A";
+
+            const subject = `Ticket: ${ticket} | ${currentMission} | Acc: ${acc} | Phone: ${phone}`;
+            const bodyText = `Dears,\n     kindly need your support for the below request.\n\n` +
+                             `تيكت: ${ticket}\nاسم العميل: ${name}\nرقم الحساب: ${acc}\nالسيجمنت: ${segment}\nرقم الهاتف المتصل: ${phone}\nتاريخ الطلب: ${date}\nرقم الموبيل المسجل: ${regPhone}\nالفرع: ${branch}\n\n`;
+            return { subject, bodyText };
+        }
+
+        function handleMailsOutlook(phone, acc, date) {
+            const ticket = document.getElementById('ticket_num').value || 'N/A';
+            const name = document.getElementById('cust_name').value || "N/A";
+            const natId = document.getElementById('nat_id').value || "N/A";
+            const inquiry = document.getElementById('inquiry_type').value || "N/A";
+            const branch = document.getElementById('home_branch').value || "N/A";
+            const bCode = document.getElementById('branch_code').value || "N/A";
+            const desc = document.getElementById('inquiry_desc').value || "N/A";
+            const segment = document.getElementById('cust_type').value || "N/A";
+            const regPhone = document.getElementById('cust_phone').value || "N/A";
+
+            const subject = `Ticket: ${ticket} | ${inquiry} | Acc: ${acc} | Phone: ${phone}`;
+            const bodyText = `الساده الزملاء\nتحية طيبة وبعد\nيرجي الاطلاع علي الاستفسار الوارد لنا بتاريخ ${date}\n\n` +
+                             `تيكت: ${ticket}\nاسم العميل: ${name}\nرقم الحساب: ${acc}\nالسيجمنت: ${segment}\nرقم الهاتف المتصل: ${phone}\nتاريخ الطلب: ${date}\nرقم الموبيل المسجل: ${regPhone}\nالفرع: ${branch}\n` +
+                             `الرقم القومي: ${natId}\nرقم الفرع: ${bCode}\nالوصف:\n${desc}\n\n`;
+            return { subject, bodyText };
+        }
+
+        function handleComplaintsOutlook(phone, acc, date) {
+            const ticket = document.getElementById('ticket_num').value || 'N/A';
+            const name = document.getElementById('cust_name').value || "N/A";
+            const natId = document.getElementById('nat_id').value || "N/A";
+            const regPhone = document.getElementById('cust_phone').value || "N/A";
+            const entity = document.getElementById('comp_entity').value || "N/A";
+            const vTicket = document.getElementById('comp_ticket').value || "N/A";
+            const vDate = document.getElementById('visit_date').value || "N/A";
+            const details = document.getElementById('comp_details').value || "N/A";
+            const action = document.getElementById('comp_action').value || "N/A";
+            const segment = document.getElementById('cust_type').value || "N/A";
+            const branch = document.getElementById('home_branch').value || "N/A";
+
+            const subject = `Ticket: ${ticket} | Complaint | Acc: ${acc} | Phone: ${phone}`;
+            const bodyText = `الساده الزملاء\nتحية طيبة وبعد\nيرجي الاطلاع علي الشكوى الواردة لنا بتاريخ ${date}\n\n` +
+                             `تيكت: ${ticket}\nاسم العميل: ${name}\nرقم الحساب: ${acc}\nالسيجمنت: ${segment}\nرقم الهاتف المتصل: ${phone}\nتاريخ الطلب: ${date}\nرقم الموبيل المسجل: ${regPhone}\nالفرع: ${branch}\n` +
+                             `الرقم القومي: ${natId}\nجهة تقديم الشكوى: ${entity}\nرقم تيكت الزيارة: ${vTicket}\nتاريخ الزيارة: ${vDate}\n\nتفاصيل الشكوى:\n${details}\n\nالمطلوب:\n${action}\n\n`;
+            return { subject, bodyText };
+        }
+
+        function handleDisputesOutlook(phone, acc) {
+            const ticket = document.getElementById('ticket_num').value || 'N/A';
+            const reqName = document.getElementById('dispute_type').value || "Dispute Request";
+            const subject = `Ticket: ${ticket} | ${reqName} | Acc: ${acc} | Phone: ${phone}`;
+            let bodyText = "Dears,\n     kindly need your assist for the below request.\n\n\n";
+            return { subject, bodyText };
+        }
+
+        function sendOutlook() {
+            const phone = document.getElementById('caller_phone').value || "N/A";
+            const acc = document.getElementById('acc_num').value || "N/A";
+            const date = document.getElementById('req_date').value || "N/A";
+            
+            if (currentMission === 'Disputes' || document.getElementById('tab-requests').classList.contains('active')) {
+                if(!document.getElementById('cust_name').value || acc === "N/A" || !currentMission) {
+                     alert("⚠️ Please fill Client Identification and select a Request Type first."); 
+                     return; 
                 }
-                employees[empIndex].usedLeave += days;
-            } else if (leaveType === 'unpaid') {
-                employees[empIndex].unpaidAbsence += days;
+                copyData(); 
             }
 
-            // تسجيل الحركة في السجل
-            leaveLog.push({
-                empID,
-                name: employee.name,
-                type: leaveType,
-                days,
-                date: new Date().toLocaleDateString('ar-EG')
-            });
+            let result;
+            switch(currentMission) {
+                case 'Mails':
+                    result = handleMailsOutlook(phone, acc, date);
+                    break;
+                case 'Complaint':
+                    result = handleComplaintsOutlook(phone, acc, date);
+                    break;
+                case 'Disputes':
+                    result = handleDisputesOutlook(phone, acc);
+                    break;
+                default:
+                    result = handleRequestsOutlook(phone, acc);
+            }
 
-            // تحديث الواجهة
-            renderEmployeeTable();
-            renderLeaveLogTable();
-            document.getElementById('leaveForm').reset();
-            showAlert('leaveAlert', 'تم تسجيل الحركة بنجاح.', 'success');
-        });
-
-        // 4. وظيفة عرض جدول الموظفين
-        function renderEmployeeTable() {
-            const tbody = document.getElementById('employeeTable').getElementsByTagName('tbody')[0];
-            tbody.innerHTML = '';
-            employees.forEach(emp => {
-                const row = tbody.insertRow();
-                row.insertCell().textContent = emp.id;
-                row.insertCell().textContent = emp.name;
-                row.insertCell().textContent = parseFloat(emp.salary).toLocaleString('ar-EG');
-                row.insertCell().textContent = emp.initialLeave - emp.usedLeave;
-                row.insertCell().textContent = parseFloat(emp.dailySalary).toLocaleString('ar-EG');
-            });
-            updateDashboard(); // تحديث لوحة القيادة بعد كل عملية
+            const mailtoLink = `mailto:call.center@scbank.com.eg?subject=${encodeURIComponent(result.subject)}&body=${encodeURIComponent(result.bodyText)}`;
+            window.location.href = mailtoLink;
         }
+       // ==========================================
+// أدوات الحاسبة (Loans & Installments)
+// ==========================================
 
-        // 5. وظيفة عرض جدول سجل الحركات
-        function renderLeaveLogTable() {
-            const tbody = document.getElementById('leaveLogTable').getElementsByTagName('tbody')[0];
-            tbody.innerHTML = '';
-            leaveLog.forEach(log => {
-                const row = tbody.insertRow();
-                row.insertCell().textContent = log.empID;
-                row.insertCell().textContent = log.name;
-                // تحويل الكود إلى اسم واضح
-                let typeName;
-                if(log.type === 'annual') typeName = 'سنوية';
-                else if(log.type === 'sick') typeName = 'مرضية';
-                else typeName = 'غياب بدون أجر';
-                row.insertCell().textContent = typeName;
-                row.insertCell().textContent = log.days;
-                row.insertCell().textContent = log.date;
-            });
-        }
+// 1. نسب عمولة تقسيط البطاقات (الجديدة)
+const ccRates = {
+    '3': 0.05,  // 5%
+    '6': 0.08,  // 8%
+    '9': 0.12,  // 12%
+    '12': 0.17, // 17%
+    '15': 0.21, // 21%
+    '18': 0.25  // 25%
+};
 
-        // 6. وظيفة احتساب المرتبات
-        function calculatePayroll() {
-            const tbody = document.getElementById('payrollTable').getElementsByTagName('tbody')[0];
-            tbody.innerHTML = '';
+function calculateCC() {
+    const amount = parseFloat(document.getElementById('cc_amount').value) || 0;
+    const tenor = document.getElementById('cc_tenor').value;
+    const rate = ccRates[tenor] || 0;
+    
+    // تحديث الشارة (البادج) بنسبة العمولة ليراها الموظف
+    document.getElementById('cc_rate_badge').innerText = (rate * 100) + '%';
+    
+    const commission = amount * rate;
+    const installment = amount / parseInt(tenor);
+    const total = amount + commission;
 
-            employees.forEach(emp => {
-                const deduction = emp.unpaidAbsence * emp.dailySalary;
-                const netSalary = emp.salary - deduction;
+    document.getElementById('cc_comm_out').innerText = commission.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+    document.getElementById('cc_inst_out').innerText = installment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+    document.getElementById('cc_total_out').innerText = total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+}
 
-                const row = tbody.insertRow();
-                row.insertCell().textContent = emp.id;
-                row.insertCell().textContent = emp.name;
-                row.insertCell().textContent = parseFloat(emp.salary).toLocaleString('ar-EG');
-                row.insertCell().textContent = emp.unpaidAbsence;
-                row.insertCell().textContent = parseFloat(deduction).toLocaleString('ar-EG');
-                row.insertCell().textContent = parseFloat(netSalary).toLocaleString('ar-EG');
+function calculateLoan() {
+    const P = parseFloat(document.getElementById('loan_amount').value) || 0;
+    const annualRate = parseFloat(document.getElementById('loan_rate').value) || 0;
+    const N = parseFloat(document.getElementById('loan_months').value) || 0;
 
-                // إعادة تعيين الغياب لـ 0 بعد احتساب المرتب (افتراضيا يتم تصفية الغياب شهريا)
-                // في نظام حقيقي يتم تصفيرها للشهر التالي
-                // employees.find(e => e.id === emp.id).unpaidAbsence = 0;
-            });
-            showAlert('payrollAlert', 'تم احتساب المرتبات بنجاح.', 'success');
-        }
+    if(P === 0 || annualRate === 0 || N === 0) {
+        document.getElementById('loan_prin_out').innerText = '0.00 EGP';
+        document.getElementById('loan_int_mo_out').innerText = '0.00 EGP';
+        document.getElementById('loan_emi_out').innerText = '0.00 EGP';
+        document.getElementById('loan_amt_out').innerText = '0.00 EGP';
+        document.getElementById('loan_int_total_out').innerText = '0.00 EGP';
+        document.getElementById('loan_total_out').innerText = '0.00 EGP';
+        return;
+    }
 
-        // 7. وظيفة تحديث لوحة القيادة
-        function updateDashboard() {
-            document.getElementById('totalEmployees').textContent = employees.length;
+    const R = (annualRate / 12) / 100;
+    const mathPower = Math.pow(1 + R, N);
+    const EMI = (P * R * mathPower) / (mathPower - 1); // القسط الشهري
+    
+    const totalPayment = EMI * N;
+    const totalInterest = totalPayment - P;
 
-            const totalAbsence = leaveLog
-                .filter(log => log.type === 'unpaid')
-                .reduce((sum, log) => sum + log.days, 0);
-            document.getElementById('monthlyAbsence').textContent = totalAbsence;
+    // المتوسطات الشهرية للتوضيح للعميل
+    const avgPrin = P / N; 
+    const avgInt = totalInterest / N;
 
-            const totalRemaining = employees.reduce((sum, emp) => sum + (emp.initialLeave - emp.usedLeave), 0);
-            document.getElementById('totalRemainingLeave').textContent = totalRemaining;
-        }
+    document.getElementById('loan_prin_out').innerText = avgPrin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+    document.getElementById('loan_int_mo_out').innerText = avgInt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+    document.getElementById('loan_emi_out').innerText = EMI.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
 
-        // 8. وظيفة عرض التنبيهات
-        function showAlert(elementId, message, type) {
-            const alertElement = document.getElementById(elementId);
-            alertElement.textContent = message;
-            alertElement.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
-            alertElement.style.display = 'block';
-            setTimeout(() => {
-                alertElement.style.display = 'none';
-            }, 3000);
-        }
+    document.getElementById('loan_amt_out').innerText = P.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+    document.getElementById('loan_int_total_out').innerText = totalInterest.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+    document.getElementById('loan_total_out').innerText = totalPayment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+}
 
-        // تهيئة البيانات عند تحميل الصفحة
-        renderEmployeeTable();
-        renderLeaveLogTable();
+function calculateSettlement() {
+    const remaining = parseFloat(document.getElementById('settle_amount').value) || 0;
+    const rateInput = parseFloat(document.getElementById('settle_rate').value) || 0; // إدخال النسبة مانيوال
+    
+    const fee = remaining * (rateInput / 100);
+    const total = remaining + fee;
 
+    document.getElementById('settle_fee_out').innerText = fee.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+    document.getElementById('settle_total_out').innerText = total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' EGP';
+}
+function loadTariffPDF() {
+    const url = document.getElementById('tariff_selector').value;
+    const frame = document.getElementById('tariff_frame');
+    const placeholder = document.getElementById('pdf_placeholder');
+
+    if (url) {
+        frame.src = url;
+        frame.style.display = 'block';
+        placeholder.style.display = 'none';
+    } else {
+        frame.src = '';
+        frame.style.display = 'none';
+        placeholder.style.display = 'flex';
+    }
+}
+
+function openTariffExternal() {
+    const url = document.getElementById('tariff_selector').value;
+    if (url) {
+        window.open(url, '_blank');
+    } else {
+        alert("Please select a category first.");
+    }
+}
     </script>
 </body>
 </html>
