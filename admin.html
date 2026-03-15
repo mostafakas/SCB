@@ -126,6 +126,20 @@
                     <tbody id="req_list"></tbody>
                 </table>
             </div>
+             <div id="tab_logs" class="config-section tab-content hidden">
+                <div class="section-header"><h3>Submission Logs (Live)</h3></div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Client</th>
+                            <th>Request</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs_list"></tbody>
+                </table>
+            </div>
         </div>
 
         <div id="tab_disputes" class="config-section tab-content hidden">
@@ -172,12 +186,18 @@
         const db = firebase.firestore();
 
         // 2. Tab Navigation
-        function showTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab_' + tab).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
-        }
+        function showTab(tabId) {
+    // إخفاء كل التابات
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+    // إظهار التابة المطلوبة بأمان
+    const targetTab = document.getElementById('tab_' + tabId);
+    if (targetTab) {
+        targetTab.classList.remove('hidden');
+        if (event) event.currentTarget.classList.add('active');
+    }
+}
 
         // 3. Mail Subject Logic
         async function addMailSubject() {
