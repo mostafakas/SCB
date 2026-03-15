@@ -3,509 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCB Admin | Smart Controller</title>
+    <title>SCB Admin | Pro Controller</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
-        /* =========================================
-           1. CSS Variables & Theme
-        ========================================= */
         :root {
-            --primary: #0047AB; /* SCB Blue */
-            --primary-hover: #003380;
-            --accent: #38bdf8;
-            --bg-dark: #0f172a;
-            --card-dark: #1e293b;
-            --card-light: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --radius: 12px;
+            --primary: #0047AB; --accent: #38bdf8; --bg-dark: #0f172a;
+            --card-dark: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --border: #334155; --success: #10b981; --danger: #ef4444;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
         body { background: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-
-        /* =========================================
-           2. Sidebar & Layout
-        ========================================= */
-        .sidebar { width: 260px; background: var(--card-dark); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; box-shadow: 4px 0 15px rgba(0,0,0,0.2); }
-        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-        .sidebar-header svg { width: 30px; height: 30px; color: var(--accent); }
-        .sidebar-header h2 { color: var(--text-main); font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; }
-        .nav-menu { flex: 1; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-        .nav-item { padding: 0.8rem 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; font-weight: 600; color: var(--text-muted); font-size: 0.95rem; }
-        .nav-item:hover { background: rgba(56, 189, 248, 0.1); color: var(--accent); transform: translateX(5px); }
-        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0, 71, 171, 0.3); }
-
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .top-header { height: 70px; background: var(--card-dark); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 2rem; justify-content: space-between; }
-        .content-body { flex: 1; padding: 2rem; overflow-y: auto; }
-
-        /* =========================================
-           3. Dashboard Widgets
-        ========================================= */
-        .header-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: linear-gradient(145deg, var(--card-dark), var(--card-light)); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .stat-card h4 { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-card p { font-size: 2rem; font-weight: 800; color: var(--accent); }
-
-        /* =========================================
-           4. Form Controls & Cards
-        ========================================= */
-        .config-card { background: var(--card-dark); border-radius: var(--radius); border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .section-title { font-size: 1.2rem; color: var(--text-main); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; }
-        
-        .input-group { margin-bottom: 1.2rem; width: 100%; }
-        .input-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600; }
-        .form-control { width: 100%; padding: 0.8rem 1rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: white; font-size: 0.95rem; transition: 0.3s; }
-        .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); }
-        
-        .btn { padding: 0.7rem 1.5rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.9rem; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .sidebar { width: 260px; background: var(--card-dark); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .nav-menu { flex: 1; padding: 1.5rem 1rem; }
+        .nav-item { padding: 0.8rem 1.2rem; border-radius: 8px; cursor: pointer; color: var(--text-muted); margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .config-card { background: var(--card-dark); border-radius: 12px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; }
+        .section-title { font-size: 1.2rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; color: var(--accent); }
+        .form-control { width: 100%; padding: 0.8rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: white; margin-bottom: 1rem; }
+        .btn { padding: 0.7rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
         .btn-accent { background: var(--accent); color: var(--bg-dark); }
-        .btn-accent:hover { background: #7dd3fc; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: #059669; }
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem; font-size: 0.8rem;}
-        .btn-danger:hover { background: var(--danger); color: white; }
-
-        /* =========================================
-           5. Fields Picker Grid (The Magic Part)
-        ========================================= */
-        .fields-container { background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: var(--radius); border: 1px dashed var(--border); margin-bottom: 1.5rem; }
-        .fields-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-        
-        .field-pill { display: flex; align-items: center; gap: 10px; background: var(--card-light); padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; user-select: none; }
-        .field-pill:hover { border-color: var(--accent); }
-        .field-pill input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
-        .field-pill span { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
-        .field-pill small { display: block; font-size: 0.7rem; color: var(--accent); margin-top: 2px; }
-
-        /* Custom Builder Area */
-        .custom-builder { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border); display: none; }
-        .custom-builder.active { display: block; animation: slideDown 0.3s ease; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* =========================================
-           6. Tables
-        ========================================= */
-        .table-responsive { width: 100%; overflow-x: auto; background: var(--card-dark); border-radius: var(--radius); border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 1.2rem 1rem; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 0.85rem; text-transform: uppercase; background: rgba(255,255,255,0.02); }
-        td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.02); }
-
-        .tag { background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block; margin: 2px; border: 1px solid rgba(56, 189, 248, 0.2); }
-
-        .tab-content { display: none; animation: fadeIn 0.4s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .btn-danger { background: var(--danger); color: white; font-size: 0.7rem; padding: 4px 8px; }
+        .btn-edit { background: var(--success); color: white; font-size: 0.7rem; padding: 4px 8px; margin-right: 5px; }
+        .fields-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 10px; }
+        .field-pill { background: #334155; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 1rem; border-bottom: 1px solid var(--border); }
+        .tag { background: rgba(56,189,248,0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin: 2px; display: inline-block; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="sidebar-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <h2>SCB Admin</h2>
-        </div>
+        <div style="padding: 2rem; font-weight: bold; font-size: 1.2rem; color: var(--accent);">SCB ADMIN</div>
         <nav class="nav-menu">
-            <div class="nav-item active" onclick="showTab('mails')">✉️ Mail Subjects</div>
-            <div class="nav-item" onclick="showTab('requests')">📝 Build Requests</div>
-            <div class="nav-item" onclick="showTab('disputes')">⚖️ Build Disputes</div>
-            <div class="nav-item" onclick="showTab('logs')">📊 View Logs</div>
+            <div class="nav-item active" onclick="showTab('fields')">🏗️ Fields Manager</div>
+            <div class="nav-item" onclick="showTab('requests')">📝 Request Builder</div>
+            <div class="nav-item" onclick="showTab('disputes')">⚖️ Dispute Builder</div>
+            <div class="nav-item" onclick="showTab('mails')">✉️ Mail Subjects</div>
         </nav>
-        <div style="padding: 1.5rem; text-align: center; border-top: 1px solid var(--border);">
-            <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 10px;">Logged in as Master</p>
-            <button class="btn btn-danger" style="width: 100%;" onclick="window.location.href='index.html'">Log Out</button>
-        </div>
     </div>
 
     <div class="main-content">
-        <div class="top-header">
-            <h3 style="color: var(--text-muted); font-weight: 600;">System Configurator</h3>
-            <div style="color: var(--accent); font-weight: bold;" id="admin_clock">00:00:00</div>
+        <div id="tab_fields" class="tab-content active">
+            <div class="config-card">
+                <h3 class="section-title">🏗️ Fields Manager (Tabs)</h3>
+                <div style="display: grid; grid-template-columns: 2fr 1fr 2fr auto; gap: 10px;">
+                    <div><label>Field Name</label><input type="text" id="f_name" class="form-control" placeholder="e.g. Card Number"></div>
+                    <div><label>Type</label>
+                        <select id="f_type" class="form-control" onchange="toggleFOptions()">
+                            <option value="text">Text</option><option value="number">Number</option>
+                            <option value="date">Date</option><option value="select">Dropdown</option>
+                        </select>
+                    </div>
+                    <div id="f_opts_div" style="display:none;"><label>Options (Comma separated)</label><input type="text" id="f_opts" class="form-control" placeholder="Opt1, Opt2"></div>
+                    <button class="btn btn-primary" style="height:45px; margin-top:20px;" onclick="saveField()">Save Field</button>
+                </div>
+                <table>
+                    <thead><tr><th>Field Label</th><th>Type</th><th>Action</th></tr></thead>
+                    <tbody id="all_fields_list"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="content-body">
-            <div class="header-stats">
-                <div class="stat-card"><h4>Mail Configs</h4><p id="stat_mail_count">0</p></div>
-                <div class="stat-card"><h4>Request Types</h4><p id="stat_req_count">0</p></div>
-                <div class="stat-card"><h4>Dispute Types</h4><p id="stat_disp_count">0</p></div>
-                <div class="stat-card"><h4>Total Logs</h4><p id="stat_logs_count">0</p></div>
+        <div id="tab_requests" class="tab-content hidden">
+            <div class="config-card">
+                <h3 class="section-title">📝 Request Builder</h3>
+                <label>Request Name</label>
+                <input type="text" id="req_name" class="form-control" placeholder="e.g. Card Replacement">
+                <label>Select Fields (Tabs) to Include:</label>
+                <div class="fields-grid" id="req_picker"></div>
+                <button class="btn btn-accent" style="width:100%; margin-top:1rem;" onclick="saveSchema('requests')">Save Request Schema</button>
+                <table>
+                    <thead><tr><th>Request Name</th><th>Included Fields</th><th>Action</th></tr></thead>
+                    <tbody id="req_list"></tbody>
+                </table>
             </div>
+        </div>
 
-            <div id="tab_mails" class="tab-content active">
-                <div class="config-card">
-                    <h3 class="section-title">✉️ Mail Inquiry Subjects</h3>
-                    <div style="display: flex; gap: 15px; margin-bottom: 2rem;">
-                        <input type="text" id="new_mail_subject" class="form-control" placeholder="Enter new subject name (e.g. Card Status)">
-                        <button class="btn btn-primary" style="white-space: nowrap;" onclick="addMailSubject()">Add Subject</button>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead><tr><th>Subject Name</th><th style="width: 100px;">Action</th></tr></thead>
-                            <tbody id="mail_list"></tbody>
-                        </table>
-                    </div>
-                </div>
+        <div id="tab_disputes" class="tab-content hidden">
+            <div class="config-card">
+                <h3 class="section-title">⚖️ Dispute Builder</h3>
+                <label>Dispute Name</label>
+                <input type="text" id="disp_name" class="form-control">
+                <label>Select Fields (Tabs) to Include:</label>
+                <div class="fields-grid" id="disp_picker"></div>
+                <button class="btn btn-accent" style="width:100%; margin-top:1rem;" onclick="saveSchema('disputes')">Save Dispute Schema</button>
+                <table>
+                    <thead><tr><th>Dispute Name</th><th>Included Fields</th><th>Action</th></tr></thead>
+                    <tbody id="disp_list"></tbody>
+                </table>
             </div>
+        </div>
 
-            <div id="tab_requests" class="tab-content">
-                <div class="config-card">
-                    <h3 class="section-title">📝 General Requests Architect</h3>
-                    
-                    <div class="input-group">
-                        <label>New Request Type Name</label>
-                        <input type="text" id="req_name" class="form-control" placeholder="e.g. Limit Increase">
-                    </div>
-
-                    <label style="color: var(--accent); font-weight: bold; margin-bottom: 10px; display: block;">Select Fields for this Request:</label>
-                    <div class="fields-container">
-                        <div class="fields-grid" id="req_fields_grid">
-                            </div>
-                        
-                        <div style="margin-top: 1.5rem; text-align: right;">
-                            <button class="btn btn-accent" onclick="toggleCustomBuilder('req')">+ Create Custom Field</button>
-                        </div>
-
-                        <div class="custom-builder" id="req_custom_builder">
-                            <div style="display: grid; grid-template-columns: 2fr 1fr 2fr auto; gap: 10px; align-items: end;">
-                                <div class="input-group" style="margin:0;"><label>Field Name</label><input type="text" id="req_cf_name" class="form-control" placeholder="e.g. Expected Delivery"></div>
-                                <div class="input-group" style="margin:0;"><label>Type</label>
-                                    <select id="req_cf_type" class="form-control" onchange="toggleOptionsInput('req')">
-                                        <option value="text">Text / String</option>
-                                        <option value="number">Number</option>
-                                        <option value="date">Date</option>
-                                        <option value="select">Dropdown List</option>
-                                    </select>
-                                </div>
-                                <div class="input-group" style="margin:0; display:none;" id="req_cf_opts_div">
-                                    <label>Dropdown Options (Comma separated)</label>
-                                    <input type="text" id="req_cf_opts" class="form-control" placeholder="Option 1, Option 2">
-                                </div>
-                                <button class="btn btn-success" style="height: 45px;" onclick="addCustomField('req')">Add</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 1rem;" onclick="saveSchema('requests')">💾 Save Request Schema</button>
+        <div id="tab_mails" class="tab-content hidden">
+            <div class="config-card">
+                <h3 class="section-title">✉️ Mail Subjects</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="mail_sub" class="form-control" placeholder="Enter new subject...">
+                    <button class="btn btn-primary" style="height:45px;" onclick="saveMail()">Add</button>
                 </div>
-
-                <div class="config-card">
-                    <h3 class="section-title">Active Request Schemas</h3>
-                    <div class="table-responsive">
-                        <table>
-                            <thead><tr><th>Request Type</th><th>Included Fields</th><th style="width: 100px;">Action</th></tr></thead>
-                            <tbody id="req_list"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab_disputes" class="tab-content">
-                <div class="config-card">
-                    <h3 class="section-title">⚖️ Dispute Logic Builder</h3>
-                    
-                    <div class="input-group">
-                        <label>New Dispute Type Name</label>
-                        <input type="text" id="disp_name" class="form-control" placeholder="e.g. ATM Cash Dispute">
-                    </div>
-
-                    <label style="color: var(--warning); font-weight: bold; margin-bottom: 10px; display: block;">Select Fields for this Dispute:</label>
-                    <div class="fields-container">
-                        <div class="fields-grid" id="disp_fields_grid">
-                            </div>
-                        
-                        <div style="margin-top: 1.5rem; text-align: right;">
-                            <button class="btn btn-accent" onclick="toggleCustomBuilder('disp')">+ Create Custom Field</button>
-                        </div>
-
-                        <div class="custom-builder" id="disp_custom_builder">
-                            <div style="display: grid; grid-template-columns: 2fr 1fr 2fr auto; gap: 10px; align-items: end;">
-                                <div class="input-group" style="margin:0;"><label>Field Name</label><input type="text" id="disp_cf_name" class="form-control" placeholder="e.g. Dispute Amount"></div>
-                                <div class="input-group" style="margin:0;"><label>Type</label>
-                                    <select id="disp_cf_type" class="form-control" onchange="toggleOptionsInput('disp')">
-                                        <option value="text">Text</option><option value="number">Number</option><option value="date">Date</option><option value="select">Dropdown</option>
-                                    </select>
-                                </div>
-                                <div class="input-group" style="margin:0; display:none;" id="disp_cf_opts_div">
-                                    <label>Dropdown Options</label>
-                                    <input type="text" id="disp_cf_opts" class="form-control" placeholder="Val1, Val2">
-                                </div>
-                                <button class="btn btn-success" style="height: 45px;" onclick="addCustomField('disp')">Add</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 1rem;" onclick="saveSchema('disputes')">💾 Save Dispute Schema</button>
-                </div>
-
-                <div class="config-card">
-                    <h3 class="section-title">Active Dispute Schemas</h3>
-                    <div class="table-responsive">
-                        <table>
-                            <thead><tr><th>Dispute Type</th><th>Included Fields</th><th style="width: 100px;">Action</th></tr></thead>
-                            <tbody id="disp_list"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab_logs" class="tab-content">
-                <div class="config-card">
-                    <h3 class="section-title">📊 Submission Logs</h3>
-                    <div class="table-responsive">
-                        <table>
-                            <thead><tr><th>Time</th><th>Client</th><th>Request Details</th><th>Status</th></tr></thead>
-                            <tbody id="logs_list">
-                                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Fetching logs...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <table>
+                    <thead><tr><th>Subject Name</th><th>Action</th></tr></thead>
+                    <tbody id="mail_list"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
-    // =========================================
-    // 1. Firebase Initialization
-    // =========================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyB9B7xXTayPP4oALheBcruECwT_ZhEsthc",
-        authDomain: "scb-assistant.firebaseapp.com",
-        projectId: "scb-assistant",
-        storageBucket: "scb-assistant.firebasestorage.app",
-        messagingSenderId: "38859033708",
-        appId: "1:38859033708:web:66df471b9dbf8e67a25c49"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9B7xXTayPP4oALheBcruECwT_ZhEsthc",
+            authDomain: "scb-assistant.firebaseapp.com",
+            projectId: "scb-assistant",
+            storageBucket: "scb-assistant.firebasestorage.app",
+            messagingSenderId: "38859033708",
+            appId: "1:38859033708:web:66df471b9dbf8e67a25c49"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    setInterval(() => { document.getElementById('admin_clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
+        let allFields = []; 
 
-    // =========================================
-    // 2. Base Fields Pool (التـابـات المتاحة)
-    // =========================================
-    const scbBranches = ["Garden City", "Downtown", "Dokki", "Mohandesseen", "Heliopolis", "Nasr City", "Maadi", "New Cairo", "Smouha", "Alexandria Main"];
-    
-    let reqFieldsPool = [
-        { id: 'card_num', label: 'Card Number', type: 'text' },
-        { id: 'card_type', label: 'Card Type', type: 'select', options: ['Debit', 'Credit', 'Prepaid'] },
-        { id: 'card_cat', label: 'Card Category', type: 'select', options: ['Visa Signature', 'Visa Platinum', 'Master Titanium', 'Meeza', 'Classic'] },
-        { id: 'trx_date', label: 'Transaction Date', type: 'date' },
-        { id: 'tenor', label: 'Tenor (Months)', type: 'select', options: ['3', '6', '9', '12', '15', '18'] },
-        { id: 'trx_amt', label: 'Transaction Amount', type: 'number' },
-        { id: 'ref_num', label: 'Reference Number', type: 'text' },
-        { id: 'activation_date', label: 'Activation Date', type: 'date' },
-        { id: 'expiry_date', label: 'Expiry Date', type: 'date' },
-        { id: 'destination', label: 'Destination', type: 'text' },
-        { id: 'intl_num', label: 'International Num', type: 'text' },
-        { id: 'pickup_branch', label: 'Pickup Branch', type: 'select', options: scbBranches },
-        { id: 'reason', label: 'Reason', type: 'text' },
-        { id: 'suffix_num', label: 'Suffix Number', type: 'text' },
-        { id: 'suffix_type', label: 'Suffix Type', type: 'select', options: ['Saving', 'Current', 'Credit'] },
-        { id: 'primary_acc', label: 'Primary Account Type', type: 'select', options: ['Saving', 'Current', 'Credit'] },
-        { id: 'removal_dur', label: 'Removal Duration', type: 'text' },
-        { id: 'rule_type', label: 'Rule Type', type: 'select', options: ['1', '2', '3', '4', '5'] },
-        { id: 'username', label: 'Username', type: 'text' },
-        { id: 'user_type', label: 'User Type', type: 'select', options: ['Viewer', 'Super'] }
-    ];
+        // متغيرات حفظ الـ IDs أثناء التعديل عشان نعرف إحنا بنعدل إيه بالظبط
+        let editingFieldId = null;
+        let editingReqId = null;
+        let editingDispId = null;
 
-    let dispFieldsPool = [
-        { id: 'rrn', label: 'RRN', type: 'text' },
-        { id: 'auth_num', label: 'Auth Number', type: 'text' },
-        { id: 'trx_ref', label: 'Transaction Ref', type: 'text' },
-        { id: 'ft_id', label: 'FT ID', type: 'text' },
-        { id: 'ledger', label: 'Ledger (Debited/Credited)', type: 'select', options: ['Debited', 'Credited'] },
-        { id: 'denom', label: 'Denomination', type: 'text' },
-        { id: 'merchant', label: 'Merchant Name', type: 'text' },
-        { id: 'atm_data', label: 'ATM Data', type: 'text' }
-    ];
+        function showTab(t) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab_'+t).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+        }
 
-    // =========================================
-    // 3. UI Navigation
-    // =========================================
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab_' + tabId).classList.add('active');
-        if(event) event.currentTarget.classList.add('active');
-    }
+        function toggleFOptions() {
+            document.getElementById('f_opts_div').style.display = document.getElementById('f_type').value === 'select' ? 'block' : 'none';
+        }
 
-    function renderFieldsPicker(pool, containerId, prefix) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = pool.map(field => `
-            <label class="field-pill">
-                <input type="checkbox" value="${field.id}" id="${prefix}_chk_${field.id}" data-label="${field.label}">
-                <div>
-                    <span>${field.label}</span>
-                    <small>[${field.type.toUpperCase()}]</small>
-                </div>
-            </label>
-        `).join('');
-    }
+        // ==========================================
+        // 1. Fields Manager (التابات)
+        // ==========================================
+        async function saveField() {
+            const name = document.getElementById('f_name').value.trim();
+            const type = document.getElementById('f_type').value;
+            const opts = document.getElementById('f_opts').value.split(',').map(s=>s.trim()).filter(s=>s);
+            if(!name) return alert("Enter Name");
 
-    renderFieldsPicker(reqFieldsPool, 'req_fields_grid', 'req');
-    renderFieldsPicker(dispFieldsPool, 'disp_fields_grid', 'disp');
+            // لو كان بيعدل وغير الاسم، نمسح القديم
+            if (editingFieldId && editingFieldId !== name) {
+                await db.collection("fields_pool").doc(editingFieldId).delete();
+            }
 
-    // =========================================
-    // 4. Edit Logic (تحميل البيانات للتعديل)
-    // =========================================
-    async function editSchema(mode, id) {
-        const isReq = mode === 'requests';
-        const prefix = isReq ? 'req' : 'disp';
-        const colName = isReq ? 'request_types' : 'dispute_types';
+            await db.collection("fields_pool").doc(name).set({ label: name, type, options: opts });
+            alert("Field Saved!");
+            
+            // تصفير الخانات
+            document.getElementById('f_name').value = ''; 
+            document.getElementById('f_opts').value = '';
+            editingFieldId = null; // نرجع لوضع الإضافة
+        }
 
-        try {
-            const doc = await db.collection(colName).doc(id).get();
-            if (!doc.exists) return alert("Schema not found!");
+        function loadFields() {
+            db.collection("fields_pool").onSnapshot(snap => {
+                allFields = [];
+                let html = "";
+                let pickerHtml = "";
+                snap.forEach(doc => {
+                    const d = doc.data(); d.id = doc.id;
+                    allFields.push(d);
+                    html += `<tr><td>${d.label}</td><td>${d.type}</td>
+                        <td>
+                            <button class="btn-edit" onclick="editField('${d.id}')">Edit</button>
+                            <button class="btn-danger" onclick="deleteDoc('fields_pool','${d.id}')">Del</button>
+                        </td></tr>`;
+                    pickerHtml += `<label class="field-pill"><input type="checkbox" value="${d.id}" class="field-chk"> ${d.label}</label>`;
+                });
+                document.getElementById('all_fields_list').innerHTML = html;
+                document.getElementById('req_picker').innerHTML = pickerHtml;
+                document.getElementById('disp_picker').innerHTML = pickerHtml;
+            });
+        }
 
+        function editField(id) {
+            const f = allFields.find(x => x.id === id);
+            document.getElementById('f_name').value = f.label;
+            document.getElementById('f_type').value = f.type;
+            document.getElementById('f_opts').value = f.options ? f.options.join(', ') : '';
+            toggleFOptions();
+            editingFieldId = id; // نعلم إننا بنعدل
+            window.scrollTo(0,0);
+        }
+
+        // ==========================================
+        // 2. Request & Dispute Builder
+        // ==========================================
+        async function saveSchema(mode) {
+            const isReq = mode === 'requests';
+            const prefix = isReq ? 'req' : 'disp';
+            const colName = isReq ? 'request_types' : 'dispute_types';
+            
+            const name = document.getElementById(prefix+'_name').value.trim();
+            const chks = document.querySelectorAll('#'+prefix+'_picker .field-chk:checked');
+            
+            if(!name || chks.length === 0) return alert("Fill Name and Select Fields");
+
+            const selectedFields = Array.from(chks).map(c => allFields.find(f => f.id === c.value));
+            
+            let currentEditId = isReq ? editingReqId : editingDispId;
+
+            // لو بيعدل وغير الاسم، نمسح الدوكيومنت القديم عشان ميعملش نسخة تانية
+            if (currentEditId && currentEditId !== name) {
+                await db.collection(colName).doc(currentEditId).delete();
+            }
+
+            await db.collection(colName).doc(name).set({ fields: selectedFields });
+            alert("Schema Saved!");
+            
+            // تصفير الخانات
+            document.getElementById(prefix+'_name').value = '';
+            document.querySelectorAll('.field-chk').forEach(c => c.checked = false);
+            
+            // نرجع لوضع الإضافة
+            if(isReq) editingReqId = null; else editingDispId = null;
+        }
+
+        function loadSchemas(mode) {
+            const col = mode === 'requests' ? "request_types" : "dispute_types";
+            db.collection(col).onSnapshot(snap => {
+                let html = "";
+                snap.forEach(doc => {
+                    const fields = doc.data().fields.map(f => `<span class="tag">${f.label}</span>`).join('');
+                    html += `<tr><td>${doc.id}</td><td>${fields}</td>
+                        <td>
+                            <button class="btn-edit" onclick="editSchema('${mode}','${doc.id}')">Edit</button>
+                            <button class="btn-danger" onclick="deleteDoc('${col}','${doc.id}')">Del</button>
+                        </td></tr>`;
+                });
+                document.getElementById(mode === 'requests' ? 'req_list' : 'disp_list').innerHTML = html;
+            });
+        }
+
+        async function editSchema(mode, id) {
+            const col = mode === 'requests' ? "request_types" : "dispute_types";
+            const prefix = mode === 'requests' ? 'req' : 'disp';
+            
+            const doc = await db.collection(col).doc(id).get();
             const data = doc.data();
             
-            // 1. نضع الاسم في المربع
-            document.getElementById(`${prefix}_name`).value = doc.id;
+            document.getElementById(prefix+'_name').value = doc.id;
             
-            // 2. نفك التشيك بوكس من على الكل الأول
-            document.querySelectorAll(`#${prefix}_fields_grid input`).forEach(cb => cb.checked = false);
-
-            // 3. نعلم "صح" على التابات اللي موجودة في الداتا
-            data.fields.forEach(field => {
-                const cb = document.getElementById(`${prefix}_chk_${field.id}`);
-                if (cb) cb.checked = true;
+            // شيل كل العلامات الأول
+            document.querySelectorAll('#'+prefix+'_picker .field-chk').forEach(c => c.checked = false);
+            
+            // حط علامة على التابات المحفوظة
+            data.fields.forEach(f => {
+                const cb = Array.from(document.querySelectorAll('#'+prefix+'_picker .field-chk')).find(c => c.value === f.id);
+                if(cb) cb.checked = true;
             });
 
-            // 4. نطلع المستخدم لفوق للفورم عشان يشوف التعديل
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // نعلم إننا في وضع التعديل
+            if(mode === 'requests') editingReqId = id; else editingDispId = id;
             
-            // تنبيه بسيط
-            console.log("Editing: " + id);
-        } catch (err) {
-            alert("Error loading data: " + err.message);
+            window.scrollTo(0,0);
         }
-    }
 
-    // =========================================
-    // 5. Save & Update Schema
-    // =========================================
-    async function saveSchema(mode) {
-        const isReq = mode === 'requests';
-        const prefix = isReq ? 'req' : 'disp';
-        const name = document.getElementById(`${prefix}_name`).value.trim();
-        const pool = isReq ? reqFieldsPool : dispFieldsPool;
-        const colName = isReq ? 'request_types' : 'dispute_types';
+        // ==========================================
+        // 3. Mail Subjects
+        // ==========================================
+        async function saveMail() {
+            const sub = document.getElementById('mail_sub').value.trim();
+            if(!sub) return alert("Enter Mail Subject");
+            await db.collection("mail_configs").doc(sub).set({ name: sub });
+            document.getElementById('mail_sub').value = '';
+        }
 
-        if(!name) return alert("Please enter a name.");
-
-        const checkedBoxes = document.querySelectorAll(`#${prefix}_fields_grid input:checked`);
-        if(checkedBoxes.length === 0) return alert("Select at least one field.");
-
-        const selectedFieldsData = Array.from(checkedBoxes).map(cb => {
-            return pool.find(f => f.id === cb.value);
-        });
-
-        try {
-            // Firestore بيعمل Update أوتوماتيك لو الـ ID موجود فعلاً
-            await db.collection(colName).doc(name).set({
-                name: name,
-                fields: selectedFieldsData,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        function loadMails() {
+            db.collection("mail_configs").onSnapshot(snap => {
+                let html = "";
+                snap.forEach(doc => {
+                    html += `<tr><td>${doc.data().name}</td>
+                        <td><button class="btn-danger" onclick="deleteDoc('mail_configs','${doc.id}')">Del</button></td></tr>`;
+                });
+                document.getElementById('mail_list').innerHTML = html;
             });
-            alert("✅ Saved/Updated Successfully!");
-            // تفريغ الفورم بعد الحفظ
-            document.getElementById(`${prefix}_name`).value = '';
-            checkedBoxes.forEach(cb => cb.checked = false);
-        } catch (err) {
-            alert("Error: " + err.message);
-        }
-    }
-
-    // =========================================
-    // 6. Custom Field & Global Functions
-    // =========================================
-    function toggleCustomBuilder(prefix) {
-        document.getElementById(`${prefix}_custom_builder`).classList.toggle('active');
-    }
-
-    function toggleOptionsInput(prefix) {
-        const type = document.getElementById(`${prefix}_cf_type`).value;
-        document.getElementById(`${prefix}_cf_opts_div`).style.display = type === 'select' ? 'block' : 'none';
-    }
-
-    function addCustomField(prefix) {
-        const name = document.getElementById(`${prefix}_cf_name`).value.trim();
-        const type = document.getElementById(`${prefix}_cf_type`).value;
-        const optsRaw = document.getElementById(`${prefix}_cf_opts`).value;
-
-        if(!name) return;
-        
-        const newField = { id: 'cf_' + Date.now(), label: name, type: type };
-        if(type === 'select') {
-            newField.options = optsRaw.split(',').map(s => s.trim()).filter(s => s);
         }
 
-        if(prefix === 'req') {
-            reqFieldsPool.push(newField);
-            renderFieldsPicker(reqFieldsPool, 'req_fields_grid', 'req');
-        } else {
-            dispFieldsPool.push(newField);
-            renderFieldsPicker(dispFieldsPool, 'disp_fields_grid', 'disp');
+        // ==========================================
+        // 4. Global
+        // ==========================================
+        async function deleteDoc(c, i) { 
+            if(confirm("Are you sure you want to delete this?")) await db.collection(c).doc(i).delete(); 
         }
-        document.getElementById(`${prefix}_chk_${newField.id}`).checked = true;
-        toggleCustomBuilder(prefix);
-    }
 
-    // =========================================
-    // 7. Loaders (تحديث الجداول مع أزرار التعديل)
-    // =========================================
-    db.collection("mail_configs").onSnapshot(snap => {
-        document.getElementById('stat_mail_count').innerText = snap.size;
-        document.getElementById('mail_list').innerHTML = snap.docs.map(doc => 
-            `<tr><td><b>${doc.data().name}</b></td><td><button class="btn btn-danger" onclick="deleteDoc('mail_configs','${doc.id}')">Remove</button></td></tr>`
-        ).join('');
-    });
-
-    db.collection("request_types").onSnapshot(snap => {
-        document.getElementById('stat_req_count').innerText = snap.size;
-        document.getElementById('req_list').innerHTML = snap.docs.map(doc => {
-            const tags = doc.data().fields.map(f => `<span class="tag">${f.label}</span>`).join('');
-            return `<tr>
-                <td><b>${doc.id}</b></td>
-                <td>${tags}</td>
-                <td>
-                    <button class="btn btn-accent" style="padding:4px 8px; margin-right:5px;" onclick="editSchema('requests','${doc.id}')">Edit</button>
-                    <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteDoc('request_types','${doc.id}')">Del</button>
-                </td>
-            </tr>`;
-        }).join('');
-    });
-
-    db.collection("dispute_types").onSnapshot(snap => {
-        document.getElementById('stat_disp_count').innerText = snap.size;
-        document.getElementById('disp_list').innerHTML = snap.docs.map(doc => {
-            const tags = doc.data().fields.map(f => `<span class="tag">${f.label}</span>`).join('');
-            return `<tr>
-                <td><b>${doc.id}</b></td>
-                <td>${tags}</td>
-                <td>
-                    <button class="btn btn-accent" style="padding:4px 8px; margin-right:5px;" onclick="editSchema('disputes','${doc.id}')">Edit</button>
-                    <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteDoc('dispute_types','${doc.id}')">Del</button>
-                </td>
-            </tr>`;
-        }).join('');
-    });
-
-    async function deleteDoc(col, id) {
-        if(confirm("Are you sure?")) await db.collection(col).doc(id).delete();
-    }
-</script>
+        // تشغيل التحميل
+        loadFields();
+        loadSchemas('requests');
+        loadSchemas('disputes');
+        loadMails();
+    </script>
 </body>
 </html>
