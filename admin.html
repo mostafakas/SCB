@@ -108,17 +108,45 @@
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                 <div>
                     <div class="input-group"><label>Request Name</label><input type="text" id="req_name" placeholder="e.g. Loan Inquiry"></div>
-                    <label>Select Secondary Fields to Activate:</label>
-                    <div class="fields-grid" id="req_fields_picker">
-                        <label class="field-checkbox"><input type="checkbox" value="card_info"> Card Info</label>
-                        <label class="field-checkbox"><input type="checkbox" value="limit_info"> Limit Info</label>
-                        <label class="field-checkbox"><input type="checkbox" value="travel_info"> Travel Details</label>
-                        <label class="field-checkbox"><input type="checkbox" value="replacement_info"> Replacement Details</label>
-                        <label class="field-checkbox"><input type="checkbox" value="suffix_info"> Suffix Details</label>
-                        <label class="field-checkbox"><input type="checkbox" value="rule_info"> Rule Details</label>
-                        <label class="field-checkbox"><input type="checkbox" value="fraud_info"> Fraud Details</label>
-                        <label class="field-checkbox"><input type="checkbox" value="installment_info"> Installment Details</label>
-                    </div>
+                    <label style="font-weight: bold; color: var(--accent); margin-bottom: 10px; display: block;">Choose Fields to Enable for this Request:</label>
+<div class="fields-grid" id="req_fields_picker" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
+    
+    <label class="field-checkbox" title="Card Num, Card Type, Category">
+        <input type="checkbox" value="card_group"> 💳 Card Details (Num/Type/Cat)
+    </label>
+
+    <label class="field-checkbox" title="Limit Amount, Activation Date, Expiry">
+        <input type="checkbox" value="limit_group"> 💰 Limit & Activation Info
+    </label>
+
+    <label class="field-checkbox" title="Destination, From Date, To Date">
+        <input type="checkbox" value="travel_group"> ✈️ Travel Details (Country/Dates)
+    </label>
+
+    <label class="field-checkbox" title="Reason, Pickup Branch">
+        <input type="checkbox" value="replacement_group"> 🔄 Card Replacement Details
+    </label>
+
+    <label class="field-checkbox">
+        <input type="checkbox" value="nat_id_field"> 🆔 National ID Field
+    </label>
+
+    <label class="field-checkbox">
+        <input type="checkbox" value="suffix_group"> 🔢 Suffix & Account Info
+    </label>
+
+    <label class="field-checkbox">
+        <input type="checkbox" value="fraud_group"> ⚠️ Fraud Suspicious Details
+    </label>
+
+    <label class="field-checkbox">
+        <input type="checkbox" value="install_group"> 💳 CC Installment Details
+    </label>
+
+    <label class="field-checkbox">
+        <input type="checkbox" value="rule_group"> 🛡️ Rule Type & Duration
+    </label>
+</div>
                     <button class="btn btn-save" onclick="saveRequestConfig()">Save Request Type</button>
                 </div>
                 <table>
