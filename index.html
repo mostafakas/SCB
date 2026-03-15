@@ -1241,6 +1241,27 @@ function openAdminDashboard() {
         alert("⛔ Access Denied! Incorrect Password.");
     }
 }
+        // دالة لجلب مواضيع الإيميلات من فايربيز وتحديث القائمة فوراً
+function syncMailSubjects() {
+    const mailDropdown = document.getElementById('inquiry_type');
+    
+    db.collection("mail_configs").onSnapshot((querySnapshot) => {
+        // تفريغ القائمة الحالية (اختياري لو عايز تمسح القديم)
+        mailDropdown.innerHTML = ""; 
+        
+        querySnapshot.forEach((doc) => {
+            const subject = doc.data().name;
+            const option = document.createElement("option");
+            option.value = subject;
+            option.text = subject;
+            mailDropdown.appendChild(option);
+        });
+        console.log("Mail subjects synced from Firebase!");
+    });
+}
+
+// تشغيل المزامنة أول ما الصفحة تفتح
+window.addEventListener('load', syncMailSubjects);    
     </script>
 </body>
 </html>
