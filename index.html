@@ -724,28 +724,51 @@
 }
 
         function handleMainRequestChange() {
-                const type = document.getElementById('main_request_type').value;
-                currentMission = type;
-                
-                // إخفاء كل شيء أولاً
-                document.querySelectorAll('.travel-only, .replacement-only, .card-only, .limit-only, .suffix-only, .rule-only, .cc-ref-only, .activation-only, .fraud-only, .cc-install-only, .branch-field').forEach(el => el.classList.add('hidden'));                
-                if(!type) return;
+    const type = document.getElementById('main_request_type').value;
+    currentMission = type;
 
-                // إظهار الخانات بناءً على نوع الطلب
-                if(type === 'Online Limit') { document.querySelectorAll('.card-only, .limit-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Travel Note') { document.querySelectorAll('.card-only, .travel-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Card Replacement') { document.querySelectorAll('.card-only, .replacement-only, .branch-field').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Reset PIN') { document.querySelectorAll('.card-only').forEach(el => el.classList.remove('hidden')); }
-                
-                // الطلبات الجديدة
-                else if(type === 'Suffix') { document.querySelectorAll('.card-only, .suffix-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Remove Rule') { document.querySelectorAll('.card-only, .rule-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'SMS Mod') { document.querySelectorAll('.card-only, .branch-field').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'CC Referral') { document.querySelectorAll('.card-only, .cc-ref-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Activation') { document.querySelectorAll('.activation-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'Fraud') { document.querySelectorAll('.card-only, .fraud-only').forEach(el => el.classList.remove('hidden')); }
-                else if(type === 'CC_Install') { document.querySelectorAll('.card-only, .cc-install-only').forEach(el => el.classList.remove('hidden')); }
+    // 1. إخفاء كل السيكشنز الثانوية أولاً
+    const allSections = '.card-only, .limit-only, .travel-only, .replacement-only, .suffix-only, .rule-only, .fraud-only, .cc-install-only, .complaint-only, .dispute-only, .mails-only';
+    document.querySelectorAll(allSections).forEach(el => el.classList.add('hidden'));
+
+    if (!type) return;
+
+    // 2. إذا كان الطلب من الطلبات الأساسية (القديمة المبرمجة يدوياً)
+    if (coreRequests.includes(type)) {
+        if(type === 'Online Limit') { document.querySelectorAll('.card-only, .limit-only').forEach(el => el.classList.remove('hidden')); }
+        else if(type === 'Travel Note') { document.querySelectorAll('.card-only, .travel-only').forEach(el => el.classList.remove('hidden')); }
+        else if(type === 'Card Replacement') { document.querySelectorAll('.card-only, .replacement-only').forEach(el => el.classList.remove('hidden')); }
+        else if(type === 'Reset PIN') { document.querySelectorAll('.card-only').forEach(el => el.classList.remove('hidden')); }
+        else if(type === 'Suffix') { document.querySelectorAll('.card-only, .suffix-only').forEach(el => el.classList.remove('hidden')); }
+        else if(type === 'Remove Rule') { document.querySelectorAll('.card-only, .rule-only').forEach(el => el.classList.remove('hidden')); }
+        else if(type === 'CC_Install') { document.querySelectorAll('.card-only, .cc-install-only').forEach(el => el.classList.remove('hidden')); }
+        else if(type === 'Fraud') { document.querySelectorAll('.card-only, .fraud-only').forEach(el => el.classList.remove('hidden')); }
+    } 
+    // 3. إذا كان طلب "مخصص" مضاف من الداشبورد (الذكاء الاصطناعي)
+    else if (customRequestsConfig[type]) {
+        const selectedFields = customRequestsConfig[type];
+
+        // القاموس الذكي: بيربط الاختيار في الداشبورد بالكلاس في الـ HTML
+        const map = {
+            'card_group': '.card-only',
+            'limit_group': '.limit-only',
+            'travel_group': '.travel-only',
+            'replacement_group': '.replacement-only',
+            'nat_id_field': '.complaint-only', // بنستخدم سيكشن الكومبلينت لأنه فيه خانة الـ ID
+            'suffix_group': '.suffix-only',
+            'fraud_group': '.fraud-only',
+            'install_group': '.cc-install-only',
+            'rule_group': '.rule-only'
+        };
+
+        selectedFields.forEach(fieldKey => {
+            const selector = map[fieldKey];
+            if (selector) {
+                document.querySelectorAll(selector).forEach(el => el.classList.remove('hidden'));
             }
+        });
+    }
+}
 
         function loadCats() {
             const t = document.getElementById('card_type').value;
