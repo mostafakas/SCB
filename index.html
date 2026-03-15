@@ -200,6 +200,10 @@
                         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> 
                         Tariff Guide
                     </a>
+                    <a class="nav-item" onclick="openAdminDashboard()" style="margin-top: auto; color: #f59e0b; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <svg class="svg-icon" viewBox="0 0 24 24" style="color: #f59e0b;"><path d="M12 15V17M12 7V13M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Admin Control
+                    </a>
                 </nav>
             </aside>
 
@@ -1225,6 +1229,16 @@ function openTariffExternal() {
         window.open(url, '_blank');
     } else {
         alert("Please select a category first.");
+    }
+}
+        // دالة فتح لوحة التحكم بالكلمة السرية
+function openAdminDashboard() {
+    const pass = prompt("Enter Master Admin Password:");
+    // الباسورد هو MOHYI_2026 .. تقدر تغيره من السطر اللي تحت ده
+    if(pass === "PEPS") { 
+        window.location.href = "admin.html";
+    } else if (pass !== null) {
+        alert("⛔ Access Denied! Incorrect Password.");
     }
 }
     </script>
