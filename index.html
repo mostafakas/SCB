@@ -340,7 +340,6 @@
 
                                     <div class="mails-only hidden input-group"><label class="label-pro">Branch Code</label><input type="text" id="branch_code" class="input-pro font-mono"></div>
                                     <div class="mails-only hidden input-group" style="grid-column: span 2;"><label class="label-pro">Inquiry Subject</label><select id="inquiry_type" class="input-pro"><option>SpotLight Issue</option><option>Spotlight corp. Issue</option><option>Data Modification</option><option>Account Hold</option><option>Delivery Card</option><option>Account Status</option><option>Card Status</option><option>ATM Operator</option><option>Update KYC</option></select></div>
-                                    <div class="mails-only hidden input-group" style="grid-column: 1 / -1;"><label class="label-pro">Description</label><textarea id="inquiry_desc" rows="1" class="input-pro" placeholder="Details..." style="height:30px;"></textarea></div>
                                     <div class="suffix-only hidden input-group"><label class="label-pro">Suffix Number</label><input type="text" id="suffix_num" class="input-pro font-mono"></div>
                                     <div class="suffix-only hidden input-group"><label class="label-pro">Suffix Type</label><select id="suffix_type" class="input-pro"><option>Saving</option><option>Current</option><option>Credit</option></select></div>
                                     <div class="suffix-only hidden input-group"><label class="label-pro">Primary Account Type</label><select id="p_acc_type" class="input-pro"><option>Saving</option><option>Current</option><option>Credit</option></select></div>
@@ -937,7 +936,7 @@ function handleDisputeChange() {
 
     // 1. ترتيب عنوان الإيميل (السبجكت) بالإنجليزي كما طلبت:
     // اسم الميل - رقم الحساب - رقم الموبايل المتصل - رقم التيكت
-    const subject = `${inquiry} - ${acc} - ${phone} - ${ticket}`;
+    const subject = `${inquiry} Account No: ${acc} Caller ID: ${phone} Ticket: ${ticket}`;
     
     // 2. بناء نص الإيميل (البودي)
     let bodyText = `الساده الزملاء\n`;
