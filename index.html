@@ -276,8 +276,43 @@
                                     <div class="input-group"><label class="label-pro">Entity Name</label><select id="comp_entity" class="input-pro branch-list"></select></div>
                                     <div class="input-group"><label class="label-pro">Branch Ticket (Optional)</label><input type="text" id="comp_ticket" class="input-pro font-mono"></div>
                                     <div class="input-group"><label class="label-pro">Visit Date</label><input type="date" id="visit_date" class="input-pro"></div>
-                                    <div class="input-group" style="grid-column: span 2;"><label class="label-pro">Complaint Details</label><textarea id="comp_details" rows="2" class="input-pro" placeholder="Details..."></textarea></div>
-                                    <div class="input-group"><label class="label-pro">Action Required</label><textarea id="comp_action" rows="2" class="input-pro" placeholder="Action..."></textarea></div>
+                                   <div class="input-group" style="grid-column: 1 / -1;">
+                                        <label class="label-pro">Complaint Details</label>
+                                        <textarea id="comp_details" 
+                                                  placeholder="Details..." 
+                                                  oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';" 
+                                                  style="width: 100% !important; 
+                                                         min-height: 100px !important; 
+                                                         height: auto; 
+                                                         padding: 10px !important; 
+                                                         border: 1px solid var(--border-color) !important; 
+                                                         border-radius: 8px !important; 
+                                                         background: var(--input-bg) !important; 
+                                                         color: var(--text-main) !important; 
+                                                         resize: none !important; 
+                                                         overflow: hidden !important; 
+                                                         display: block !important; 
+                                                         line-height: 1.5 !important;"></textarea>
+                                    </div>
+                                    
+                                    <div class="input-group" style="grid-column: 1 / -1; margin-top: 10px;">
+                                        <label class="label-pro">Action Required</label>
+                                        <textarea id="comp_action" 
+                                                  placeholder="Action..." 
+                                                  oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';" 
+                                                  style="width: 100% !important; 
+                                                         min-height: 100px !important; 
+                                                         height: auto; 
+                                                         padding: 10px !important; 
+                                                         border: 1px solid var(--border-color) !important; 
+                                                         border-radius: 8px !important; 
+                                                         background: var(--input-bg) !important; 
+                                                         color: var(--text-main) !important; 
+                                                         resize: none !important; 
+                                                         overflow: hidden !important; 
+                                                         display: block !important; 
+                                                         line-height: 1.5 !important;"></textarea>
+                                        </div>
                                 </div>
                             </div>
 
