@@ -1015,18 +1015,20 @@ function showHint(selectEl) {
 
 // 3. دالة التحقق من الحدود (Min/Max) ومنع تخطي الماكس
 function validateNumberLimit(input, min, max) {
+    // التحقق من عدد الأرقام (Length) وليس القيمة فقط
+    if (max !== null && input.value.length > max) {
+        // قص الرقم ومنع كتابة أي شيء زيادة فوراً
+        input.value = input.value.slice(0, max);
+    }
+
     const val = parseFloat(input.value);
     const errorSpan = input.parentElement.querySelector('.limit-error');
     let errorMsg = "";
 
-    if (max !== null && val > max) {
-        errorMsg = `⛔ Max limit is ${max.toLocaleString()}`;
-        input.style.borderColor = 'var(--danger)';
-        // اختياري: إذا أردت مسح الرقم الزائد فوراً
-        // input.value = max; 
-    } else if (min !== null && val < min) {
-        errorMsg = `⚠️ Min required is ${min.toLocaleString()}`;
-        input.style.borderColor = 'var(--warning)';
+    // تنبيه بصري فقط
+    if (max !== null && input.value.length == max) {
+        errorMsg = "✅ Maximum digits reached";
+        input.style.borderColor = 'var(--success)';
     } else {
         input.style.borderColor = '';
     }
