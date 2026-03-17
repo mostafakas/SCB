@@ -120,7 +120,10 @@
                         <div id="req_selected" class="list-items"></div>
                     </div>
                 </div>
-                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('requests')">Deploy Request Schema</button>
+                <div class="flex gap-2" style="margin-top: 2rem;">
+                    <button class="btn btn-accent" style="flex:2;" onclick="saveSchema('requests')">Deploy Request Schema</button>
+                    <button id="cancel_req_btn" class="btn btn-danger hidden" style="flex:1; height: 45px;" onclick="cancelSchemaEdit('requests')">Cancel Edit</button>
+                </div>
                 <table><thead><tr><th>Name</th><th>Fields</th><th>QA</th><th>Action</th></tr><tbody id="req_list_body"></tbody></table>
             </div>
         </div>
@@ -144,7 +147,10 @@
                         <div id="disp_selected" class="list-items"></div>
                     </div>
                 </div>
-                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('disputes')">Deploy Dispute Schema</button>
+                <div class="flex gap-2" style="margin-top: 2rem;">
+                    <button class="btn btn-accent" style="flex:2;" onclick="saveSchema('requests')">Deploy Dispute Schema</button>
+                    <button id="cancel_disp_btn" class="btn btn-danger hidden" style="flex:1; height: 45px;" onclick="cancelSchemaEdit('disputes')">Cancel Edit</button>
+                </div>
                 <table><thead><tr><th>Name</th><th>Fields</th><th>Action</th></tr><tbody id="disp_list_body"></tbody></table>
             </div>
         </div>
@@ -211,16 +217,49 @@
                         <div><label>Mask End</label><input type="number" id="mask_end" class="form-control" value="${existingData?.maskEnd || ''}"></div>
                     </div>`;
             } else if (type === 'select') {
-                box.classList.remove('hidden');
-                box.innerHTML = `
+        box.classList.remove('hidden');
+        box.innerHTML = `
+            <div class="grid-2">
+                <div>
                     <label style="color:var(--accent); font-size:0.9rem;">Dropdown Options (Bulk Mode)</label>
-                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Add options separated by a comma (e.g. Option 1, Option 2)</p>
-                    <textarea id="bulk_select_opts" class="form-control" rows="4">${existingData?.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
-                `;
-            } else {
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Add options separated by a comma (e.g. Option1, Option2)</p>
+                    <textarea id="bulk_select_opts" class="form-control" rows="5" oninput="syncManualFromBulk()">${existingData?.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
+                </div>
+                <div>
+                    <label style="color:var(--warning); font-size:0.9rem;">Manual Hints / Fees</label>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Add a hint/fee for each option below</p>
+                    <div id="manual_options_list" style="max-height:120px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:8px; background:rgba(0,0,0,0.2);"></div>
+                </div>
+            </div>
+        `;
+        // تشغيل الدالة فوراً عشان ترسم الحقول لو بنعمل Edit
+        setTimeout(syncManualFromBulk, 100); 
+    }
+            else {
                 box.classList.add('hidden');
             }
         }
+        function syncManualFromBulk() {
+    const bulk = document.getElementById('bulk_select_opts').value;
+    const container = document.getElementById('manual_options_list');
+    if(!container) return;
+    
+    // تقسيم النص لمصفوفة وإزالة الفراغات
+    const items = bulk.split(',').map(i => i.trim()).filter(i => i !== "");
+    
+    // الاحتفاظ بالقيم المكتوبة حالياً عشان متمسحش وإنت بتكتب أوبشن جديد
+    const currentHints = {};
+    document.querySelectorAll('.manual-hint').forEach(input => {
+        currentHints[input.getAttribute('data-for')] = input.value;
+    });
+
+    container.innerHTML = items.map(item => `
+        <div style="margin-bottom:8px; font-size:0.8rem; color:var(--accent); display:flex; align-items:center; gap:10px;">
+            <span style="flex:1; overflow:hidden; text-overflow:ellipsis;">${item}</span>
+            <input type="text" class="manual-hint form-control" style="margin:0; padding:4px 8px; height:30px; flex:2; font-size:0.8rem;" data-for="${item}" placeholder="Add Hint/Fee" value="${currentHints[item] || ''}">
+        </div>
+    `).join('');
+}
 
         async function saveField() {
             const name = document.getElementById('f_name').value.trim();
@@ -234,9 +273,16 @@
                 fieldData.maskStart = document.getElementById('mask_start').value;
                 fieldData.maskEnd = document.getElementById('mask_end').value;
             } else if (type === 'select') {
-                const bulk = document.getElementById('bulk_select_opts').value;
-                fieldData.options = bulk.split(',').map(item => ({ label: item.trim(), hint: "" })).filter(o => o.label !== "");
-            }
+        const bulkText = document.getElementById('bulk_select_opts').value;
+        const manualHints = document.querySelectorAll('.manual-hint');
+        
+        fieldData.options = bulkText.split(',').map(item => {
+            const label = item.trim();
+            // بندور على حقل الـ Hint الخاص بالاسم ده
+            const hintInput = Array.from(manualHints).find(h => h.getAttribute('data-for') === label);
+            return { label: label, hint: hintInput ? hintInput.value.trim() : "" };
+        }).filter(o => o.label !== "");
+    }
 
             if (editingFieldId && editingFieldId !== name) {
                 await db.collection("fields_pool").doc(editingFieldId).delete();
@@ -348,27 +394,43 @@ function updateOrderFromUI(mode) {
     if(mode === 'req') selectedReq = newList; else selectedDisp = newList;
 }
 
-        async function saveSchema(mode) {
-            const isReq = mode === 'requests';
-            const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
-            const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa');
-            const name = nameInput.value.trim();
-            const fields = isReq ? selectedReq : selectedDisp;
-            const qa = qaInput.value.split('\n').map(q => q.trim()).filter(q => q !== "");
+       async function saveSchema(mode) {
+    const isReq = mode === 'requests';
+    const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
+    const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa');
+    const name = nameInput.value.trim();
+    const fields = isReq ? selectedReq : selectedDisp;
+    const qa = qaInput.value.split('\n').map(q => q.trim()).filter(q => q !== "");
 
-            if(!name || fields.length === 0) return alert("Enter Name and select fields!");
+    if(!name || fields.length === 0) return alert("Enter Name and select fields!");
 
-            if(editingSchemaId && editingSchemaId !== name) {
-                await db.collection(isReq ? "request_types" : "dispute_types").doc(editingSchemaId).delete();
-            }
-            await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({ fields, qa });
-            alert("✅ Schema Saved!");
-            
-            nameInput.value = ""; qaInput.value = "";
-            if(isReq) selectedReq = []; else selectedDisp = [];
-            editingSchemaId = null;
-            renderDualLists();
+    try {
+        if(editingSchemaId && editingSchemaId !== name) {
+            await db.collection(isReq ? "request_types" : "dispute_types").doc(editingSchemaId).delete();
         }
+        await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({ fields, qa });
+        
+        alert("✅ Schema Saved Successfully!");
+        
+        // --- الجزء الخاص بإعادة تهيئة الواجهة وإخفاء الزرار ---
+        nameInput.value = ""; 
+        qaInput.value = "";
+        if(isReq) selectedReq = []; else selectedDisp = [];
+        editingSchemaId = null;
+        
+        // إخفاء زرار الكنسل بعد الحفظ
+        const cancelBtnId = isReq ? 'cancel_req_btn' : 'cancel_disp_btn';
+        const cancelBtn = document.getElementById(cancelBtnId);
+        if(cancelBtn) {
+            cancelBtn.classList.add('hidden');
+        }
+        
+        renderDualLists();
+    } catch (error) {
+        console.error("Error saving schema:", error);
+        alert("❌ Error saving schema!");
+    }
+}
 
         function loadSchemas() {
             db.collection("request_types").onSnapshot(snap => {
@@ -402,8 +464,19 @@ function updateOrderFromUI(mode) {
             if(mode === 'requests') selectedReq = [...d.fields]; else selectedDisp = [...d.fields];
             editingSchemaId = id;
             renderDualLists();
+            document.getElementById(mode === 'requests' ? 'cancel_req_btn' : 'cancel_disp_btn').classList.remove('hidden');
             window.scrollTo(0,0);
         }
+        function cancelSchemaEdit(mode) {
+    editingSchemaId = null;
+    const isReq = mode === 'requests';
+    document.getElementById(isReq ? 'req_name' : 'disp_name').value = '';
+    document.getElementById(isReq ? 'req_qa' : 'disp_qa').value = '';
+    if(isReq) selectedReq = []; else selectedDisp = [];
+    
+    document.getElementById(isReq ? 'cancel_req_btn' : 'cancel_disp_btn').classList.add('hidden');
+    renderDualLists(); // إعادة رسم القوائم للوضع الافتراضي
+}
 
         // --- Mails ---
         async function saveMail() {
