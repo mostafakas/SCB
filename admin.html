@@ -281,59 +281,72 @@
         }
 
         // --- Dual Lists & Schema ---
-        function renderDualLists() {
-            ['requests', 'disputes'].forEach(mode => {
-                const isReq = mode === 'requests';
-                const selected = isReq ? selectedReq : selectedDisp;
-                const availCont = document.getElementById(mode + '_available');
-                const selCont = document.getElementById(mode + '_selected');
-                
-                availCont.innerHTML = "";
-                allFields.forEach(f => {
-                    if (!selected.find(s => s.id === f.id)) {
-                        const el = document.createElement('div'); el.className = 'item';
-                        el.innerHTML = `<span>${f.label}</span> <button class="btn btn-sm btn-primary" onclick="moveToSelected('${mode}','${f.id}')">+</button>`;
-                        availCont.appendChild(el);
-                    }
-                });
+       function renderDualLists() {
+    // استخدمنا req و disp عشان تطابق الـ IDs اللي في الـ HTML
+    ['req', 'disp'].forEach(mode => {
+        const isReq = (mode === 'req');
+        const selected = isReq ? selectedReq : selectedDisp;
+        
+        const availCont = document.getElementById(mode + '_available');
+        const selCont = document.getElementById(mode + '_selected');
+        
+        // التأكد إن العناصر موجودة فعلاً قبل ما نعدل عليها عشان نمنع الـ Error
+        if (!availCont || !selCont) return;
 
-                selCont.innerHTML = "";
-                selected.forEach((f, i) => {
-                    const el = document.createElement('div'); el.className = 'item'; el.draggable = true;
-                    el.innerHTML = `<span>☰ ${f.label}</span> <button class="btn btn-sm btn-danger" onclick="removeFromSelected('${mode}',${i})">×</button>`;
-                    el.addEventListener('dragstart', () => el.classList.add('dragging'));
-                    el.addEventListener('dragend', () => { el.classList.remove('dragging'); updateOrderFromUI(mode); });
-                    selCont.appendChild(el);
-                });
+        availCont.innerHTML = "";
+        allFields.forEach(f => {
+            if (!selected.find(s => s.id === f.id)) {
+                const el = document.createElement('div');
+                el.className = 'item';
+                el.innerHTML = `<span>${f.label}</span> <button class="btn btn-sm btn-primary" onclick="moveToSelected('${mode}','${f.id}')">+</button>`;
+                availCont.appendChild(el);
+            }
+        });
 
-                selCont.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    const dragging = document.querySelector('.dragging');
-                    if(!dragging) return;
-                    const siblings = [...selCont.querySelectorAll('.item:not(.dragging)')];
-                    let nextSibling = siblings.find(sib => e.clientY <= sib.getBoundingClientRect().top + sib.offsetHeight / 2);
-                    selCont.insertBefore(dragging, nextSibling || null);
-                });
+        selCont.innerHTML = "";
+        selected.forEach((f, i) => {
+            const el = document.createElement('div');
+            el.className = 'item selected';
+            el.draggable = true;
+            el.innerHTML = `<span>☰ ${f.label}</span> <button class="btn btn-sm btn-danger" onclick="removeFromSelected('${mode}',${i})">×</button>`;
+            
+            el.addEventListener('dragstart', () => { el.classList.add('dragging'); });
+            el.addEventListener('dragend', () => { 
+                el.classList.remove('dragging'); 
+                updateOrderFromUI(mode); 
             });
-        }
+            selCont.appendChild(el);
+        });
 
-        function moveToSelected(mode, id) {
-            const f = allFields.find(x => x.id === id);
-            if(mode === 'requests') selectedReq.push(f); else selectedDisp.push(f);
-            renderDualLists();
-        }
+        // تفعيل منطقة السحب
+        selCont.addEventListener('dragover', e => {
+            e.preventDefault();
+            const dragging = document.querySelector('.dragging');
+            if(!dragging) return;
+            const siblings = [...selCont.querySelectorAll('.item:not(.dragging)')];
+            let nextSibling = siblings.find(sib => e.clientY <= sib.getBoundingClientRect().top + sib.offsetHeight / 2);
+            selCont.insertBefore(dragging, nextSibling || null);
+        });
+    });
+}
+       function moveToSelected(mode, id) {
+    const f = allFields.find(x => x.id === id);
+    if(mode === 'req') selectedReq.push(f); else selectedDisp.push(f);
+    renderDualLists();
+}
 
-        function removeFromSelected(mode, i) {
-            if(mode === 'requests') selectedReq.splice(i, 1); else selectedDisp.splice(i, 1);
-            renderDualLists();
-        }
+function removeFromSelected(mode, i) {
+    if(mode === 'req') selectedReq.splice(i, 1); else selectedDisp.splice(i, 1);
+    renderDualLists();
+}
 
-        function updateOrderFromUI(mode) {
-            const container = document.getElementById(mode + '_selected');
-            const labels = [...container.querySelectorAll('span:not([style])')].map(s => s.innerText.replace('☰ ', '').trim());
-            const newList = labels.map(l => allFields.find(f => f.label === l)).filter(f => f);
-            if(mode === 'requests') selectedReq = newList; else selectedDisp = newList;
-        }
+function updateOrderFromUI(mode) {
+    const container = document.getElementById(mode + '_selected');
+    if (!container) return;
+    const labels = [...container.querySelectorAll('span')].map(s => s.innerText.replace('☰ ', '').trim());
+    const newList = labels.map(l => allFields.find(f => f.label === l)).filter(f => f);
+    if(mode === 'req') selectedReq = newList; else selectedDisp = newList;
+}
 
         async function saveSchema(mode) {
             const isReq = mode === 'requests';
