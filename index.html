@@ -806,21 +806,7 @@ function handleDisputeChange() {
 }
 
 // دالة سحرية عشان تبني شكل الحقل (نص، رقم، تاريخ، قايمة) زي ما صممته في الداشبورد
-function buildDynamicField(f) {
-    const div = document.createElement('div');
-    div.className = 'input-group dynamic-fld';
-    
-    let inputHtml = '';
-    if (f.type === 'select') {
-        const opts = f.options ? f.options.map(o => `<option value="${o}">${o}</option>`).join('') : '';
-        inputHtml = `<select id="dyn_${f.id}" class="input-pro dyn-input" data-label="${f.label}"><option value="">Select...</option>${opts}</select>`;
-    } else {
-        inputHtml = `<input type="${f.type}" id="dyn_${f.id}" class="input-pro dyn-input font-mono" data-label="${f.label}" placeholder="${f.label}">`;
-    }
 
-    div.innerHTML = `<label class="label-pro">${f.label}</label>${inputHtml}`;
-    return div;
-}
         function resetForm() {
             document.getElementById('missionForm').reset();
             if(document.getElementById('req_date')) document.getElementById('req_date').valueAsDate = new Date();
@@ -928,23 +914,31 @@ function buildDynamicField(f) {
 }
 
         // --- OUTLOOK MAILER ---
-                function handleMailsOutlook(phone, acc, date) {
-            const ticket = document.getElementById('ticket_num').value || 'N/A';
-            const name = document.getElementById('cust_name').value || "N/A";
-            const natId = document.getElementById('nat_id').value || "N/A";
-            const inquiry = document.getElementById('inquiry_type').value || "N/A";
-            const branch = document.getElementById('home_branch').value || "N/A";
-            const bCode = document.getElementById('branch_code').value || "N/A";
-            const desc = document.getElementById('inquiry_desc').value || "N/A";
-            const segment = document.getElementById('cust_type').value || "N/A";
-            const regPhone = document.getElementById('cust_phone').value || "N/A";
+               function handleMailsOutlook(phone, acc, date) {
+    const inquiry = document.getElementById('inquiry_type').value;
+    const customTemplate = mailTemplates[inquiry] || ""; // سحب الديباجة المخصصة للموضوع
+    
+    const ticket = document.getElementById('ticket_num').value || 'N/A';
+    const name = document.getElementById('cust_name').value || "N/A";
+    const natId = document.getElementById('nat_id').value || "N/A";
+    const desc = document.getElementById('inquiry_desc').value || "N/A";
+    const segment = document.getElementById('cust_type').value || "N/A";
 
-            const subject = `Ticket: ${ticket} | ${inquiry} | Acc: ${acc} | Phone: ${phone}`;
-            const bodyText = `الساده الزملاء\nتحية طيبة وبعد\nيرجي الاطلاع علي الاستفسار الوارد لنا بتاريخ ${date}\n\n` +
-                             `تيكت: ${ticket}\nاسم العميل: ${name}\nرقم الحساب: ${acc}\nالسيجمنت: ${segment}\nرقم الهاتف المتصل: ${phone}\nتاريخ الطلب: ${date}\nرقم الموبيل المسجل: ${regPhone}\nالفرع: ${branch}\n` +
-                             `الرقم القومي: ${natId}\nرقم الفرع: ${bCode}\nالوصف:\n${desc}\n\n`;
-            return { subject, bodyText };
-        }
+    const subject = `Ticket: ${ticket} | ${inquiry} | Acc: ${acc}`;
+    
+    // بناء نص الإيميل: الديباجة أولاً ثم البيانات
+    let bodyText = `${customTemplate}\n\n` +
+                   `--- بيانات الحالة ---\n` +
+                   `اسم العميل: ${name}\n` +
+                   `رقم الحساب: ${acc}\n` +
+                   `السيجمنت: ${segment}\n` +
+                   `الرقم القومي: ${natId}\n` +
+                   `رقم الهاتف: ${phone}\n` +
+                   `التاريخ: ${date}\n` +
+                   `التفاصيل الإضافية: ${desc}\n\n`;
+                   
+    return { subject, bodyText };
+}
 
         function handleComplaintsOutlook(phone, acc, date) {
             const ticket = document.getElementById('ticket_num').value || 'N/A';
@@ -968,10 +962,97 @@ function buildDynamicField(f) {
         // ==========================================
 // دالة تجميع البيانات للنسخ (النسخة الذكية)
 // ==========================================
+// 1. الدالة المسؤولة عن رسم الحقول (مع دعم الماكس، المينيمم، والتلميحات)
+function buildDynamicField(f) {
+    const div = document.createElement('div');
+    div.className = 'input-group dynamic-fld';
+    div.style.position = 'relative';
+    
+    let inputHtml = '';
+    
+    // أ. إذا كان الحقل قائمة منسدلة (Dropdown)
+    if (f.type === 'select') {
+        const opts = f.options ? f.options.map(o => `<option value="${o.label}" data-hint="${o.hint || ''}">${o.label}</option>`).join('') : '';
+        inputHtml = `
+            <select id="dyn_${f.id}" class="input-pro dyn-input" data-label="${f.label}" onchange="showHint(this)">
+                <option value="">Select...</option>
+                ${opts}
+            </select>
+            <span class="hint-text" style="display:block; font-size:0.65rem; color:var(--warning); margin-top:2px; min-height:10px; font-weight:bold;"></span>
+        `;
+    } 
+    // ب. إذا كان الحقل رقماً (Number) مع تطبيق القيود
+    else if (f.type === 'number') {
+        const minAttr = f.min ? `min="${f.min}"` : '';
+        const maxAttr = f.max ? `max="${f.max}"` : '';
+        inputHtml = `
+            <input type="number" id="dyn_${f.id}" class="input-pro dyn-input font-mono" 
+                   data-label="${f.label}" ${minAttr} ${maxAttr} 
+                   data-mask-start="${f.maskStart || ''}" data-mask-end="${f.maskEnd || ''}"
+                   oninput="validateNumberLimit(this, ${f.min || 'null'}, ${f.max || 'null'})"
+                   placeholder="${f.label}">
+            <span class="limit-error" style="display:block; font-size:0.65rem; color:var(--danger); margin-top:2px; min-height:10px; font-weight:bold;"></span>
+        `;
+    }
+    // ج. باقي أنواع الحقول
+    else {
+        inputHtml = `<input type="${f.type}" id="dyn_${f.id}" class="input-pro dyn-input font-mono" data-label="${f.label}" placeholder="${f.label}">`;
+    }
+
+    div.innerHTML = `<label class="label-pro">${f.label}</label>${inputHtml}`;
+    return div;
+}
+
+// 2. دالة إظهار الملاحظة/المصاريف (Hint) تحت القائمة
+function showHint(selectEl) {
+    const selectedOption = selectEl.options[selectEl.selectedIndex];
+    const hintText = selectedOption.getAttribute('data-hint');
+    const hintSpan = selectEl.parentElement.querySelector('.hint-text');
+    if (hintSpan) {
+        hintSpan.innerText = hintText || "";
+    }
+}
+
+// 3. دالة التحقق من الحدود (Min/Max) ومنع تخطي الماكس
+function validateNumberLimit(input, min, max) {
+    const val = parseFloat(input.value);
+    const errorSpan = input.parentElement.querySelector('.limit-error');
+    let errorMsg = "";
+
+    if (max !== null && val > max) {
+        errorMsg = `⛔ Max limit is ${max.toLocaleString()}`;
+        input.style.borderColor = 'var(--danger)';
+        // اختياري: إذا أردت مسح الرقم الزائد فوراً
+        // input.value = max; 
+    } else if (min !== null && val < min) {
+        errorMsg = `⚠️ Min required is ${min.toLocaleString()}`;
+        input.style.borderColor = 'var(--warning)';
+    } else {
+        input.style.borderColor = '';
+    }
+    
+    if (errorSpan) errorSpan.innerText = errorMsg;
+}
+
+// 4. دالة التشفير المخصص (Custom Masking)
+function applyCustomMask(val, start, end) {
+    if (!val || val === "N/A") return val;
+    let s = parseInt(start);
+    let e = parseInt(end);
+    
+    // إذا لم يتم تحديد بداية ونهاية، نستخدم التشفير الافتراضي
+    if (isNaN(s) || isNaN(e)) return maskCard(val); 
+
+    let chars = val.split('');
+    for (let i = s; i < e && i < chars.length; i++) {
+        if (chars[i] !== ' ') chars[i] = '*';
+    }
+    return chars.join('');
+}
+
+// 5. تحديث دالة تجميع البيانات لتدعم التشفير المخصص
 function getFormData() {
     const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
-    
-    // 1. البيانات الأساسية للعميل (دي ثابتة في كل الطلبات)
     let d = { 
         "Ticket": getVal('ticket_num') || "N/A",
         "Client Name": getVal('cust_name'), 
@@ -981,27 +1062,22 @@ function getFormData() {
         "Date": getVal('req_date'),
         "Reg. Mobile": getVal('cust_phone'),
         "Branch": getVal('home_branch') || getVal('disp_branch') || "N/A",
-        "Request Type": currentMission // اسم الطلب أو الاعتراض
+        "Request Type": currentMission
     };
 
-    // 2. معالجة الإيميلات والشكاوى (عشان دول لسه ليهم قسم ثابت)
-    if(currentMission === 'Mails') { 
-        d["Request"] = getVal('inquiry_type'); d["National ID"] = getVal('nat_id'); d["Details"] = getVal('inquiry_desc'); 
-        return d;
-    }
-    if(currentMission === 'Complaint') { 
-        d["Request"] = "Complaint"; d["National ID"] = getVal('nat_id'); d["Entity"] = getVal('comp_entity'); d["Visit Date"] = getVal('visit_date'); d["Complaint"] = getVal('comp_details'); d["Action Required"] = getVal('comp_action'); 
-        return d;
-    }
-
-    // 3. الجزء الذكي: سحب بيانات أي حقول ديناميكية تم إنشاؤها من الداشبورد
+    // جلب الحقول الديناميكية وتطبيق التشفير المخصص
     document.querySelectorAll('.dyn-input').forEach(input => {
         const label = input.getAttribute('data-label');
         let val = input.value || "N/A";
         
-        // لو الحقل فيه كلمة Card بنعمله Masking (تشفير لجزء من الرقم)
-        if(label.toLowerCase().includes('card') && val !== "N/A") {
-            val = maskCard(val);
+        // تطبيق التشفير المخصص لو الحقل رقماً وفيه إعدادات ماسكنج
+        const mStart = input.getAttribute('data-mask-start');
+        const mEnd = input.getAttribute('data-mask-end');
+        
+        if (mStart && mEnd && val !== "N/A") {
+            val = applyCustomMask(val, mStart, mEnd);
+        } else if (label.toLowerCase().includes('card') && val !== "N/A") {
+            val = maskCard(val); // التشفير الافتراضي
         }
         
         d[label] = val;
@@ -1009,24 +1085,23 @@ function getFormData() {
 
     return d;
 }
-
-// ==========================================
+        // ==========================================
 // دوال إرسال الأوتلوك (النسخة الذكية)
 // ==========================================
 function handleRequestsOutlook(phone, acc) {
     const ticket = document.getElementById('ticket_num').value || 'N/A';
     const name = document.getElementById('cust_name').value || "N/A";
     const date = document.getElementById('req_date').value || "N/A";
-    const segment = document.getElementById('cust_type').value || "N/A";
-    const regPhone = document.getElementById('cust_phone').value || "N/A";
-    const branch = document.getElementById('home_branch').value || "N/A";
-
-    const subject = `Ticket: ${ticket} | ${currentMission} | Acc: ${acc} | Phone: ${phone}`;
-    let bodyText = `Dears,\n     kindly need your support for the below request.\n\n` +
-                     `تيكت: ${ticket}\nاسم العميل: ${name}\nرقم الحساب: ${acc}\nالسيجمنت: ${segment}\nرقم الهاتف المتصل: ${phone}\nتاريخ الطلب: ${date}\nرقم الموبيل المسجل: ${regPhone}\nالفرع: ${branch}\n\n` + 
-                     `--- تفاصيل الطلب ---\n`;
     
-    // سحب الحقول الديناميكية للأوتلوك
+    // سحب الديباجة لو موجودة في إعدادات الريكويست
+    const customTemplate = customRequestsConfig[currentMission]?.template || "Dears, kindly need your support for the below request.";
+
+    const subject = `Ticket: ${ticket} | ${currentMission} | Acc: ${acc}`;
+    let bodyText = `${customTemplate}\n\n` +
+                   `اسم العميل: ${name}\nرقم الحساب: ${acc}\nالهاتف: ${phone}\nالتاريخ: ${date}\n\n` + 
+                   `--- تفاصيل الطلب ---\n`;
+    
+    // إضافة الحقول الديناميكية
     document.querySelectorAll('.dyn-input').forEach(input => {
         const label = input.getAttribute('data-label');
         const val = input.value || "N/A";
@@ -1240,27 +1315,26 @@ function syncDisputes() {
 }
 
 // 3. دالة جلب الإيميلات (Mails)
+let mailTemplates = {}; // متغير عالمي لتخزين الديباجات
+
 function syncMailSubjects() {
     const mailDropdown = document.getElementById('inquiry_type');
     db.collection("mail_configs").onSnapshot((querySnapshot) => {
-        mailDropdown.innerHTML = ""; 
+        mailDropdown.innerHTML = '<option value="">Select Subject...</option>'; 
+        mailTemplates = {}; // إعادة تهيئة
+        
         querySnapshot.forEach((doc) => {
-            const subject = doc.data().name;
+            const data = doc.data();
+            mailTemplates[data.name] = data.template || ""; // تخزين الديباجة
+            
             const option = document.createElement("option");
-            option.value = subject;
-            option.text = subject;
+            option.value = data.name;
+            option.text = data.name;
             mailDropdown.appendChild(option);
         });
-        console.log("Mail subjects synced from Firebase!");
+        console.log("Mail templates synced!");
     });
 }
-
-// تشغيل كل دوال المزامنة أول ما الصفحة تفتح
-window.addEventListener('load', () => {
-    syncMailSubjects();
-    syncRequests();
-    syncDisputes();
-});
     </script>
 </body>
 </html>
