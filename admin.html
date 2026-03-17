@@ -94,7 +94,8 @@
                         <div id="req_selected" class="list-items"></div>
                     </div>
                 </div>
-
+                    <label style="margin-top: 1rem; display: block;">3. Quality Check Questions (Enter each question on a new line):</label>
+                    <textarea id="req_qa" class="form-control" rows="4" placeholder="- Did you verify customer ID?&#10;- Did you confirm the amount?"></textarea>
                 <button class="btn btn-accent" style="margin-top: 1.5rem;" onclick="saveSchema('requests')">Save Request Configuration</button>
                 <table id="req_table">
                     <thead><tr><th>Request</th><th>Fields Order</th><th>Action</th></tr></thead>
@@ -118,7 +119,8 @@
                         <div id="disp_selected" class="list-items"></div>
                     </div>
                 </div>
-
+                   <label style="margin-top: 1rem; display: block;">3. Quality Check Questions (Enter each question on a new line):</label>
+                    <textarea id="disp_qa" class="form-control" rows="4" placeholder="- Checked System Details?&#10;- Confirm SLA?"></textarea>
                 <button class="btn btn-accent" style="margin-top: 1.5rem;" onclick="saveSchema('disputes')">Save Dispute Configuration</button>
                 <table id="disp_table">
                     <thead><tr><th>Dispute</th><th>Fields Order</th><th>Action</th></tr></thead>
@@ -272,29 +274,7 @@
         }
 
         // --- Schema Logic (Save & Edit) ---
-        async function saveSchema(mode) {
-            const isReq = mode === 'requests';
-            const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
-            const name = nameInput.value.trim();
-            const fields = isReq ? selectedReq : selectedDisp;
-
-            if(!name || fields.length === 0) return alert("Please enter name and select fields");
-
-            // If we renamed during edit, delete old one
-            if (editingId && editingId !== name) {
-                await db.collection(isReq ? "request_types" : "dispute_types").doc(editingId).delete();
-            }
-
-            await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({ fields });
-            alert("Schema Saved!");
-            
-            // Reset
-            nameInput.value = "";
-            if(isReq) selectedReq = []; else selectedDisp = [];
-            editingId = null;
-            renderList(mode);
-        }
-
+        
         function loadSchemas(mode) {
             const col = mode === 'requests' ? "request_types" : "dispute_types";
             db.collection(col).onSnapshot(snap => {
@@ -315,20 +295,53 @@
             });
         }
 
-        async function editSchema(mode, id) {
-            const isReq = mode === 'requests';
-            const col = isReq ? "request_types" : "dispute_types";
-            const doc = await db.collection(col).doc(id).get();
-            const data = doc.data();
+        // تعديل دالة الحفظ عشان تاخد الأسئلة من الـ Textarea
+async function saveSchema(mode) {
+    const isReq = mode === 'requests';
+    const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
+    const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa'); // سحبنا حقل الأسئلة
+    
+    const name = nameInput.value.trim();
+    const fields = isReq ? selectedReq : selectedDisp;
+    // تحويل الأسئلة لمصفوفة (Array) كل سطر بسؤال، وبنشيل السطور الفاضية
+    const qaList = qaInput.value.split('\n').map(q => q.trim()).filter(q => q !== "");
 
-            document.getElementById(isReq ? 'req_name' : 'disp_name').value = id;
-            if(isReq) selectedReq = [...data.fields]; else selectedDisp = [...data.fields];
-            
-            editingId = id;
-            renderList(mode);
-            window.scrollTo(0,0);
-        }
+    if(!name || fields.length === 0) return alert("Please enter name and select fields");
 
+    if (editingId && editingId !== name) {
+        await db.collection(isReq ? "request_types" : "dispute_types").doc(editingId).delete();
+    }
+
+    // ضفنا الـ qaList للحفظ في الداتابيز
+    await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({ fields, qa: qaList });
+    alert("Schema & QA Saved!");
+    
+    nameInput.value = "";
+    qaInput.value = ""; // تفريغ حقل الأسئلة بعد الحفظ
+    if(isReq) selectedReq = []; else selectedDisp = [];
+    editingId = null;
+    renderList(mode);
+}
+
+// تعديل دالة التعديل عشان ترجع الأسئلة في الـ Textarea لما تفتح طلب قديم
+async function editSchema(mode, id) {
+    const isReq = mode === 'requests';
+    const col = isReq ? "request_types" : "dispute_types";
+    const doc = await db.collection(col).doc(id).get();
+    const data = doc.data();
+
+    document.getElementById(isReq ? 'req_name' : 'disp_name').value = id;
+    
+    // سحب الأسئلة ورصها تحت بعضها في الـ Textarea
+    const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa');
+    qaInput.value = data.qa ? data.qa.join('\n') : "";
+
+    if(isReq) selectedReq = [...data.fields]; else selectedDisp = [...data.fields];
+    
+    editingId = id;
+    renderList(mode);
+    window.scrollTo(0,0);
+}
         // --- Mails ---
         async function saveMail() {
             const sub = document.getElementById('mail_sub').value.trim();
