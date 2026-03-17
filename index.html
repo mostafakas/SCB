@@ -702,53 +702,6 @@
     }
 }
 
-        function handleMainRequestChange() {
-    const type = document.getElementById('main_request_type').value;
-    currentMission = type;
-
-    // 1. إخفاء كل السيكشنز الثانوية أولاً
-    const allSections = '.card-only, .limit-only, .travel-only, .replacement-only, .suffix-only, .rule-only, .fraud-only, .cc-install-only, .complaint-only, .dispute-only, .mails-only';
-    document.querySelectorAll(allSections).forEach(el => el.classList.add('hidden'));
-
-    if (!type) return;
-
-    // 2. إذا كان الطلب من الطلبات الأساسية (القديمة المبرمجة يدوياً)
-    if (coreRequests.includes(type)) {
-        if(type === 'Online Limit') { document.querySelectorAll('.card-only, .limit-only').forEach(el => el.classList.remove('hidden')); }
-        else if(type === 'Travel Note') { document.querySelectorAll('.card-only, .travel-only').forEach(el => el.classList.remove('hidden')); }
-        else if(type === 'Card Replacement') { document.querySelectorAll('.card-only, .replacement-only').forEach(el => el.classList.remove('hidden')); }
-        else if(type === 'Reset PIN') { document.querySelectorAll('.card-only').forEach(el => el.classList.remove('hidden')); }
-        else if(type === 'Suffix') { document.querySelectorAll('.card-only, .suffix-only').forEach(el => el.classList.remove('hidden')); }
-        else if(type === 'Remove Rule') { document.querySelectorAll('.card-only, .rule-only').forEach(el => el.classList.remove('hidden')); }
-        else if(type === 'CC_Install') { document.querySelectorAll('.card-only, .cc-install-only').forEach(el => el.classList.remove('hidden')); }
-        else if(type === 'Fraud') { document.querySelectorAll('.card-only, .fraud-only').forEach(el => el.classList.remove('hidden')); }
-    } 
-    // 3. إذا كان طلب "مخصص" مضاف من الداشبورد (الذكاء الاصطناعي)
-    else if (customRequestsConfig[type]) {
-        const selectedFields = customRequestsConfig[type];
-
-        // القاموس الذكي: بيربط الاختيار في الداشبورد بالكلاس في الـ HTML
-        const map = {
-            'card_group': '.card-only',
-            'limit_group': '.limit-only',
-            'travel_group': '.travel-only',
-            'replacement_group': '.replacement-only',
-            'nat_id_field': '.complaint-only', // بنستخدم سيكشن الكومبلينت لأنه فيه خانة الـ ID
-            'suffix_group': '.suffix-only',
-            'fraud_group': '.fraud-only',
-            'install_group': '.cc-install-only',
-            'rule_group': '.rule-only'
-        };
-
-        selectedFields.forEach(fieldKey => {
-            const selector = map[fieldKey];
-            if (selector) {
-                document.querySelectorAll(selector).forEach(el => el.classList.remove('hidden'));
-            }
-        });
-    }
-}
-
         function loadCats() {
             const t = document.getElementById('card_type').value;
             const c = document.getElementById('card_cat');
@@ -805,58 +758,70 @@
             if(mode === 'open') dateDiv.classList.add('hidden'); else dateDiv.classList.remove('hidden');
         }
 
-        function handleDisputeChange() {
-            const type = document.getElementById('dispute_type').value;
-            const container = document.getElementById('dispute_dynamic_fields');
-            
-            document.querySelectorAll('.disp-fld').forEach(el => el.classList.add('hidden'));
-            
-            if(!type) {
-                container.style.display = 'none';
-                return;
-            }
-            
-            container.style.display = 'grid';
+        // دالة عرض حقول الطلبات بناءً على الداشبورد
+function handleMainRequestChange() {
+    const type = document.getElementById('main_request_type').value;
+    currentMission = type;
 
-            const show = (selectors) => {
-                selectors.split(',').forEach(s => {
-                    const el = document.querySelector('.disp-' + s.trim());
-                    if(el) el.classList.remove('hidden');
-                });
-            };
+    // بنخفي السكاشن القديمة كلها عشان نعتمد على الجديد
+    const allSections = '.card-only, .limit-only, .travel-only, .replacement-only, .suffix-only, .rule-only, .fraud-only, .cc-install-only';
+    document.querySelectorAll(allSections).forEach(el => el.classList.add('hidden'));
 
-            if(type === 'Dispute Request - ATM Cash Dispute') {
-                show('card, rrn, auth, trx-date, trx-amt, disp-amt, atm-data, ledger, ft-id, desc');
-            } 
-            else if(type === 'Dispute Request - ATM Deposit Dispute') {
-                show('card, trx-date, trx-amt, disp-amt, atm-data, ledger, ft-id, denom, desc');
-            } 
-            else if(type === 'Dispute Request - POS & Online Trx Dispute') {
-                show('card, rrn, auth, trx-date, disp-amt, merch, ledger, ft-id, desc');
-            }
-            else if(type === 'Dispute Request - Release Hold Dispute') {
-                show('card, rrn, auth, trx-date, trx-amt, merch, ledger, aclk, desc');
-            }
-            else if(type === 'Dispute Request - E-Wallet ATM Cash Out') {
-                show('sub-mobile, trx-date, trx-ref, trx-amt, disp-amt, atm-data, desc');
-            }
-            else if(type === 'Dispute Request - E-Wallet ATM Deposit') {
-                show('sub-mobile, trx-date, trx-ref, trx-amt, disp-amt, atm-data, denom, desc');
-            }
-            else if(type === 'Dispute Request - E-Wallet Purchase - Fawry Services') {
-                show('sub-mobile, trx-date, trx-ref, disp-amt, merch, desc');
-            }
-            else if(type === 'Dispute Request - E-banking Transaction Dispute') {
-                show('trx-ref, trx-date, ben-info, ledger, transfer-method, desc');
-            }
-            else if(type === 'Dispute Request - InstaPay Dispute') {
-                show('trx-date, trx-amt, trx-ref, transfer-method, payee-ipa, ft-id, desc');
-            }
-            else if(type === 'Dispute Request - ATM Operator') {
-                show('iban, bank-name, country, denom-val, datetime, atm-id, desc');
-            }
-        }
+    // بنجهز المكان اللي هنرسم فيه الحقول الديناميك
+    let container = document.getElementById('dynamic_request_fields');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'dynamic_request_fields';
+        container.style.cssText = 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 1rem; width: 100%; border-top: 1px dashed var(--border-color); padding-top: 1rem;';
+        // بنحطه تحت قايمة اختيار الطلب
+        document.getElementById('main_request_type').parentElement.parentElement.appendChild(container);
+    }
+    
+    container.innerHTML = ''; // تفريغ أي حقول قديمة من الشاشة
 
+    if (!type || !customRequestsConfig[type]) return;
+
+    // بنلف على الحقول اللي جاية من الداشبورد ونرسمها
+    const fields = customRequestsConfig[type];
+    fields.forEach(f => {
+        container.appendChild(buildDynamicField(f));
+    });
+}
+
+// دالة عرض حقول الاعتراضات بناءً على الداشبورد
+function handleDisputeChange() {
+    const type = document.getElementById('dispute_type').value;
+    currentMission = type;
+
+    // بنستخدم الكونتينر القديم بتاع الاعتراضات بس بنمسح اللي جواه
+    let container = document.getElementById('dispute_dynamic_fields');
+    container.innerHTML = ''; 
+    container.style.display = type ? 'grid' : 'none';
+
+    if (!type || !customDisputesConfig[type]) return;
+
+    const fields = customDisputesConfig[type];
+    fields.forEach(f => {
+        container.appendChild(buildDynamicField(f));
+    });
+}
+
+// دالة سحرية عشان تبني شكل الحقل (نص، رقم، تاريخ، قايمة) زي ما صممته في الداشبورد
+function buildDynamicField(f) {
+    const div = document.createElement('div');
+    div.className = 'input-group dynamic-fld';
+    
+    let inputHtml = '';
+    if (f.type === 'select') {
+        const opts = f.options ? f.options.map(o => `<option value="${o}">${o}</option>`).join('') : '';
+        inputHtml = `<select id="dyn_${f.id}" class="input-pro dyn-input" data-label="${f.label}"><option value="">Select...</option>${opts}</select>`;
+    } else {
+        inputHtml = `<input type="${f.type}" id="dyn_${f.id}" class="input-pro dyn-input font-mono" data-label="${f.label}" placeholder="${f.label}">`;
+    }
+
+    div.innerHTML = `<label class="label-pro">${f.label}</label>${inputHtml}`;
+    return div;
+}
         function resetForm() {
             document.getElementById('missionForm').reset();
             if(document.getElementById('req_date')) document.getElementById('req_date').valueAsDate = new Date();
