@@ -1279,19 +1279,24 @@ let customDisputesConfig = {};
 // 1. دالة جلب الطلبات (Requests)
 function syncRequests() {
     const reqDropdown = document.getElementById('main_request_type');
+    if (!reqDropdown) return;
+
     db.collection("request_types").onSnapshot((querySnapshot) => {
         reqDropdown.innerHTML = '<option value="">Select Request Type...</option>';
         customRequestsConfig = {}; 
 
         querySnapshot.forEach((doc) => {
             const reqName = doc.id;
-            customRequestsConfig[reqName] = doc.data();
+            customRequestsConfig[reqName] = doc.data(); // بنسحب الداتا كاملة (الحقول + الأسئلة + الديباجة)
+
             const option = document.createElement("option");
             option.value = reqName;
             option.text = reqName;
             reqDropdown.appendChild(option);
         });
-        console.log("Requests synced from Firebase!");
+        console.log("✅ Requests Synced Successfully");
+    }, (error) => {
+        console.error("❌ Firebase Requests Error:", error);
     });
 }
 
