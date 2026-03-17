@@ -245,22 +245,34 @@
         // 1. Fields Logic (Smart Configurations)
         // ==========================================
         function renderFieldSettings(existingData = null) {
-            const type = document.getElementById('f_type').value;
-            const box = document.getElementById('dynamic_f_settings');
-            box.innerHTML = '';
-            
-            if (type === 'number') 
-                box.classList.remove('hidden');
-                box.innerHTML = `
-                    <p style="color:var(--accent); font-weight:bold; margin-bottom:10px;">Number Constraints & Masking</p>
-                    <div class="grid-2">
-                        <div><label>Minimum Value</label><input type="number" id="num_min" class="form-control" placeholder="Optional" value="${existingData?.min || ''}"></div>
-                        <div><label>Maximum Value</label><input type="number" id="num_max" class="form-control" placeholder="Optional" value="${existingData?.max || ''}"></div>
-                        <div><label>Masking Start (Index)</label><input type="number" id="mask_start" class="form-control" placeholder="e.g. 6" value="${existingData?.maskStart || ''}"></div>
-                        <div><label>Masking End (Index)</label><input type="number" id="mask_end" class="form-control" placeholder="e.g. 12" value="${existingData?.maskEnd || ''}"></div>
-                    </div>
-                `;
-            }
+    const type = document.getElementById('f_type').value;
+    const box = document.getElementById('dynamic_f_settings');
+    box.innerHTML = '';
+    
+    if (type === 'number') {
+        box.classList.remove('hidden');
+        box.innerHTML = `
+            <p style="color:var(--accent); font-weight:bold; margin-bottom:10px;">Number Constraints & Masking</p>
+            <div class="grid-2">
+                <div><label>Min Digits/Value</label><input type="number" id="num_min" class="form-control" value="${existingData?.min || ''}"></div>
+                <div><label>Max Digits (Hard Limit)</label><input type="number" id="num_max" class="form-control" value="${existingData?.max || ''}"></div>
+                <div><label>Masking Start</label><input type="number" id="mask_start" class="form-control" value="${existingData?.maskStart || ''}"></div>
+                <div><label>Masking End</label><input type="number" id="mask_end" class="form-control" value="${existingData?.maskEnd || ''}"></div>
+            </div>`;
+    } 
+    else if (type === 'select') {
+        box.classList.remove('hidden');
+        box.innerHTML = `
+            <div style="margin-bottom:10px;">
+                <p style="color:var(--accent); font-weight:bold;">Dropdown Options (Bulk Mode)</p>
+                <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">Write options separated by comma (Option1, Option2...)</p>
+                <textarea id="bulk_select_opts" class="form-control" rows="5" placeholder="Elite, Mass, Staff...">${existingData && existingData.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
+            </div>`;
+    } 
+    else {
+        box.classList.add('hidden');
+    }
+}
             else if (type === 'select') {
                     box.classList.remove('hidden');
                     box.innerHTML = `
@@ -294,37 +306,32 @@
         }
 
         async function saveField() {
-            const name = document.getElementById('f_name').value.trim();
-            const type = document.getElementById('f_type').value;
-            if(!name) return alert("Field Name is required!");
+    const name = document.getElementById('f_name').value.trim();
+    const type = document.getElementById('f_type').value;
+    if(!name) return alert("Field Name is required!");
 
-            let fieldData = { label: name, type: type };
+    let fieldData = { label: name, type: type };
 
-            if (type === 'number') {
-                fieldData.min = document.getElementById('num_min').value;
-                fieldData.max = document.getElementById('num_max').value;
-                fieldData.maskStart = document.getElementById('mask_start').value;
-                fieldData.maskEnd = document.getElementById('mask_end').value;
-                }
-                    else if (type === 'select') {
-                        const bulkText = document.getElementById('bulk_select_opts').value;
-                        // تحويل النص المكتوب لمصفوفة خيارات بناءً على الفاصلة
-                        let opts = bulkText.split(',').map(item => {
-                            return { label: item.trim(), hint: "" }; // حالياً بنخلي الـ Hint فاضي في الـ Bulk
-                        }).filter(item => item.label !== "");
-                        
-                        fieldData.options = opts;
-                    }
+    if (type === 'number') {
+        fieldData.min = document.getElementById('num_min').value;
+        fieldData.max = document.getElementById('num_max').value;
+        fieldData.maskStart = document.getElementById('mask_start').value;
+        fieldData.maskEnd = document.getElementById('mask_end').value;
+    } 
+    else if (type === 'select') {
+        const bulkText = document.getElementById('bulk_select_opts').value;
+        let opts = bulkText.split(',').map(item => ({ label: item.trim(), hint: "" })).filter(item => item.label !== "");
+        fieldData.options = opts;
+    }
 
-            if (editingFieldId && editingFieldId !== name) {
-                await db.collection("fields_pool").doc(editingFieldId).delete();
-            }
+    if (editingFieldId && editingFieldId !== name) {
+        await db.collection("fields_pool").doc(editingFieldId).delete();
+    }
 
-            await db.collection("fields_pool").doc(name).set(fieldData);
-            alert("Field Saved Successfully!");
-            cancelFieldEdit();
-        }
-
+    await db.collection("fields_pool").doc(name).set(fieldData);
+    alert("✅ Field Saved Successfully!");
+    cancelFieldEdit();
+}
         function loadFields() {
             db.collection("fields_pool").onSnapshot(snap => {
                 allFields = [];
