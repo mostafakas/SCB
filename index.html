@@ -364,7 +364,7 @@
                         </div>
 
                         <div style="border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem; display: flex; gap: 0.75rem;">
-                            <button type="button" onclick="openQA()" class="btn btn-primary" style="flex: 2;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> VERIFY & COPY</button>
+                            <button type="button" id="btn-verify" onclick="openQA()" class="btn btn-primary" style="flex: 2;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> VERIFY & COPY</button>
                             <button type="button" onclick="sendOutlook()" class="btn btn-outline" style="flex: 1;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> OUTLOOK</button>
                             <button type="button" onclick="resetForm()" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);" title="Clear Form"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                         </div>
@@ -669,6 +669,14 @@
                 document.getElementById('mainTitle').innerText = "Tariff Guide";
                 document.getElementById('subTitle').innerText = "Fees & Commissions Documents";
             }
+            // جوه دالة switchTab(tabId) 
+            if(tabId === 'mails') {
+                // لو إحنا في الميل، هنخفي زرار النسخ
+                document.getElementById('btn-verify').classList.add('hidden');
+            } else {
+                // في الطلبات والاعتراضات، هنظهر الزرارين
+                document.getElementById('btn-verify').classList.remove('hidden');
+            }
         }
 
         function openFormMode(mode) {
@@ -916,26 +924,32 @@ function handleDisputeChange() {
         // --- OUTLOOK MAILER ---
                function handleMailsOutlook(phone, acc, date) {
     const inquiry = document.getElementById('inquiry_type').value;
-    const customTemplate = mailTemplates[inquiry] || ""; // سحب الديباجة المخصصة للموضوع
+    const customTemplate = mailTemplates[inquiry] || ""; // الديباجة من الداشبورد
     
-    const ticket = document.getElementById('ticket_num').value || 'N/A';
-    const name = document.getElementById('cust_name').value || "N/A";
-    const natId = document.getElementById('nat_id').value || "N/A";
-    const desc = document.getElementById('inquiry_desc').value || "N/A";
-    const segment = document.getElementById('cust_type').value || "N/A";
+    const ticket = document.getElementById('ticket_num').value || 'لا يوجد';
+    const name = document.getElementById('cust_name').value || "لا يوجد";
+    const segment = document.getElementById('cust_type').value || "لا يوجد";
+    const branch = document.getElementById('home_branch').value || "لا يوجد";
+    const regPhone = document.getElementById('cust_phone').value || "لا يوجد";
 
+    // تاريخ اليوم
+    const todayDate = new Date().toLocaleDateString('ar-EG');
+
+    // عنوان الإيميل
     const subject = `Ticket: ${ticket} | ${inquiry} | Acc: ${acc}`;
     
-    // بناء نص الإيميل: الديباجة أولاً ثم البيانات
-    let bodyText = `${customTemplate}\n\n` +
-                   `--- بيانات الحالة ---\n` +
+    // محتوى الإيميل كما طلبت بالضبط
+    let bodyText = `الساده الزملاء\nتحية .. طيبة .. وبعد\nبرجاء الاطلاع علي الاستفسار الوارد لنا بتاريخ (${todayDate})\n\n` +
+                   `--- البيانات الأساسية ---\n` +
                    `اسم العميل: ${name}\n` +
                    `رقم الحساب: ${acc}\n` +
-                   `السيجمنت: ${segment}\n` +
-                   `الرقم القومي: ${natId}\n` +
-                   `رقم الهاتف: ${phone}\n` +
-                   `التاريخ: ${date}\n` +
-                   `التفاصيل الإضافية: ${desc}\n\n`;
+                   `شريحة العميل (Segment): ${segment}\n` +
+                   `رقم الهاتف المتصل: ${phone}\n` +
+                   `رقم الهاتف المسجل: ${regPhone}\n` +
+                   `الفرع: ${branch}\n` +
+                   `رقم التيكت: ${ticket}\n\n` +
+                   `--- تفاصيل الاستفسار ---\n` +
+                   `${customTemplate}\n`; // الديباجة المكتوبة في الداشبورد
                    
     return { subject, bodyText };
 }
