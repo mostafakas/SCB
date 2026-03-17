@@ -3,102 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCB Admin | Enterprise Controller</title>
+    <title>SCB Admin | Enterprise Controller v2.0</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
-        /* =========================================
-           1. Core Variables & Reset
-        ========================================= */
         :root {
-            --primary: #0033a0; --primary-hover: #002277; --accent: #0ea5e9; --accent-light: #e0f2fe;
+            --primary: #0033a0; --primary-hover: #002277; --accent: #0ea5e9;
             --bg-main: #0f172a; --bg-card: #1e293b; --bg-input: #0b1120;
             --text-main: #f8fafc; --text-muted: #94a3b8;
-            --border: #334155; --border-focus: #38bdf8;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --border: #334155; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: 14px; }
+        body { background: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         
-        /* =========================================
-           2. Layout (Sidebar & Main)
-        ========================================= */
-        .sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow-md); z-index: 10; }
-        .brand { padding: 1.5rem; font-weight: 800; font-size: 1.3rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); letter-spacing: 1px;}
-        .brand svg { width: 24px; height: 24px; color: var(--accent); }
-        .nav-menu { flex: 1; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 5px; }
-        .nav-item { padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; gap: 12px; font-weight: 600; transition: all 0.2s ease; border: 1px solid transparent; }
-        .nav-item svg { width: 18px; height: 18px; }
-        .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text-main); border-color: var(--border); }
-        .nav-item.active { background: var(--primary); color: white; border-color: var(--primary-hover); box-shadow: 0 4px 12px rgba(0, 51, 160, 0.4); }
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 10px 0 15px rgba(0,0,0,0.2); z-index: 10; }
+        .brand { padding: 1.5rem; font-weight: 800; font-size: 1.2rem; color: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+        .nav-menu { flex: 1; padding: 1rem; display: flex; flex-direction: column; gap: 5px; }
+        .nav-item { padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; gap: 12px; font-weight: 600; transition: 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0, 51, 160, 0.4); }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; scroll-behavior: smooth; background: radial-gradient(circle at top right, #1e293b, #0f172a); }
+        .config-card { background: var(--bg-card); border-radius: 15px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .section-title { font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
         
-        .main-content { flex: 1; padding: 2rem; overflow-y: auto; scroll-behavior: smooth; }
-        .config-card { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .section-title { font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; display: flex; align-items: center; gap: 10px; font-weight: 700; }
+        /* Forms & Buttons */
+        label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; }
+        .form-control { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; color: white; margin-bottom: 1.2rem; transition: 0.3s; }
+        .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); }
         
-        /* =========================================
-           3. UI Components (Forms, Buttons, Tables)
-        ========================================= */
-        label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-control { width: 100%; padding: 0.75rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: white; margin-bottom: 1rem; font-size: 0.95rem; transition: all 0.3s ease; }
-        .form-control:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15); }
-        textarea.form-control { resize: vertical; min-height: 80px; }
-        
-        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.9rem; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0, 51, 160, 0.3); }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-accent { background: var(--accent); color: var(--bg-main); width: 100%; height: 45px; font-size: 1rem; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); }
-        .btn-accent:hover { background: #0284c7; color: white; }
-        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 6px; }
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn { padding: 0.8rem 1.5rem; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-accent { background: var(--accent); color: white; width: 100%; font-size: 1rem; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
         .btn-danger:hover { background: var(--danger); color: white; }
-        .btn-edit { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); margin-right: 5px; }
+        .btn-edit { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
         .btn-edit:hover { background: var(--success); color: white; }
-        
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1.5rem; }
-        th { background: rgba(0,0,0,0.2); padding: 1rem; text-align: left; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 2px solid var(--border); }
-        td { padding: 1rem; border-bottom: 1px solid var(--border); background: var(--bg-card); transition: background 0.2s; }
-        tr:hover td { background: rgba(255,255,255,0.02); }
-        .tag { background: rgba(14, 165, 233, 0.1); color: var(--accent); border: 1px solid rgba(14, 165, 233, 0.2); padding: 3px 8px; border-radius: 20px; font-size: 0.75rem; margin: 2px; display: inline-block; font-weight: 600; }
-        
-        /* =========================================
-           4. Dual List & Advanced UI
-        ========================================= */
-        .dual-list-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
-        .list-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; height: 380px; display: flex; flex-direction: column; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
-        .list-header { background: rgba(255,255,255,0.03); padding: 12px 15px; font-size: 0.85rem; font-weight: 700; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
+        /* Dual List */
+        .dual-list-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 1rem; }
+        .list-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; height: 400px; display: flex; flex-direction: column; overflow: hidden; }
+        .list-header { background: rgba(255,255,255,0.05); padding: 12px; font-weight: 700; color: var(--accent); border-bottom: 1px solid var(--border); font-size: 0.8rem; display: flex; justify-content: space-between; }
         .list-items { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .item { background: var(--bg-card); border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: grab; transition: 0.2s; }
+        .item:hover { border-color: var(--accent); background: rgba(14, 165, 233, 0.05); }
+        .item.dragging { opacity: 0.5; border: 2px dashed var(--accent); }
+
+        /* Bulk & Options */
+        .settings-box { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 1.5rem; border: 1px dashed var(--border); margin-bottom: 1.5rem; }
+        .opt-row { display: flex; gap: 10px; margin-bottom: 10px; }
         
-        .item { background: var(--bg-card); border: 1px solid var(--border); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
-        .item:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(14,165,233,0.1); }
-        .item.selected { border-left: 4px solid var(--accent); cursor: grab; }
-        .item.selected:active { cursor: grabbing; }
-        .item.dragging { opacity: 0.5; background: rgba(14,165,233,0.1); border: 1px dashed var(--accent); }
-        
-        /* Dynamic Settings Box */
-        .settings-box { background: rgba(0,0,0,0.2); border: 1px dashed var(--border); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; }
-        .opt-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-        
+        table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
+        th { text-align: left; padding: 1rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+        td { padding: 1rem; border-bottom: 1px solid var(--border); }
+        .tag { background: rgba(14, 165, 233, 0.1); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; margin: 2px; display: inline-block; }
         .hidden { display: none !important; }
-        .flex { display: flex; } .gap-2 { gap: 0.5rem; } .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
         <div class="brand">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             SCB ADMIN PRO
         </div>
         <nav class="nav-menu">
-            <a class="nav-item active" onclick="showTab('fields')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg> Fields Pool</a>
-            <a class="nav-item" onclick="showTab('requests')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Request Builder</a>
-            <a class="nav-item" onclick="showTab('disputes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Dispute Builder</a>
-            <a class="nav-item" onclick="showTab('mails')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Mail Templates</a>
+            <div class="nav-item active" onclick="showTab('fields')">🏗️ Fields Pool</div>
+            <div class="nav-item" onclick="showTab('requests')">📝 Request Builder</div>
+            <div class="nav-item" onclick="showTab('disputes')">⚖️ Dispute Builder</div>
+            <div class="nav-item" onclick="showTab('mails')">✉️ Mail Templates</div>
         </nav>
     </aside>
 
@@ -108,26 +85,26 @@
             <div class="config-card">
                 <h3 class="section-title">🏗️ Smart Fields Builder</h3>
                 <div class="grid-2">
-                    <div><label>Field Name (Label)</label><input type="text" id="f_name" class="form-control" placeholder="e.g. Card Category"></div>
-                    <div><label>Field Type</label>
+                    <div><label>Field Label</label><input type="text" id="f_name" class="form-control" placeholder="e.g. Card Number"></div>
+                    <div><label>Type</label>
                         <select id="f_type" class="form-control" onchange="renderFieldSettings()">
-                            <option value="text">Standard Text</option>
-                            <option value="number">Number (with Limits & Masking)</option>
-                            <option value="date">Date Picker</option>
-                            <option value="select">Dropdown (with Smart Hints)</option>
+                            <option value="text">Text</option>
+                            <option value="number">Number (Limits & Masking)</option>
+                            <option value="date">Date</option>
+                            <option value="select">Dropdown (Bulk / Manual)</option>
                         </select>
                     </div>
                 </div>
 
                 <div id="dynamic_f_settings" class="settings-box hidden"></div>
 
-                <div class="flex gap-2">
-                    <button class="btn btn-primary" onclick="saveField()">Save Field Setup</button>
-                    <button class="btn btn-danger hidden" id="cancel_edit_f_btn" onclick="cancelFieldEdit()">Cancel Edit</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="saveField()">Save Field</button>
+                    <button id="cancel_f_edit" class="btn btn-danger hidden" onclick="cancelFieldEdit()">Cancel</button>
                 </div>
 
-                <table style="margin-top: 2rem;">
-                    <thead><tr><th>Field Label</th><th>Type</th><th>Special Configs</th><th>Action</th></tr></thead>
+                <table>
+                    <thead><tr><th>Label</th><th>Type</th><th>Config</th><th>Action</th></tr></thead>
                     <tbody id="all_fields_list"></tbody>
                 </table>
             </div>
@@ -135,85 +112,68 @@
 
         <div id="tab_requests" class="tab-content hidden">
             <div class="config-card">
-                <h3 class="section-title">📝 Request Schema Builder</h3>
+                <h3 class="section-title">📝 Request Schema</h3>
                 <label>Request Name</label>
-                <input type="text" id="req_name" class="form-control" placeholder="e.g. Online Limit Activation">
+                <input type="text" id="req_name" class="form-control" placeholder="e.g. Online Limit">
                 
-                <label>Quality Check (QA) Questions (One per line)</label>
-                <textarea id="req_qa" class="form-control" rows="3" placeholder="- Did you verify customer ID?&#10;- Did you confirm the limit amount?"></textarea>
+                <label>Quality Check (QA) - One per line</label>
+                <textarea id="req_qa" class="form-control" rows="3" placeholder="Confirm ID?&#10;Verify Amount?"></textarea>
 
                 <div class="dual-list-container">
                     <div class="list-box">
-                        <div class="list-header">Available Fields <span>(Click to Add)</span></div>
+                        <div class="list-header">Pool <span>(Click to Add)</span></div>
                         <div id="req_available" class="list-items"></div>
                     </div>
-                    <div class="list-box" style="border-color: var(--accent);">
-                        <div class="list-header" style="color: white; background: var(--primary);">Selected Fields <span>(Drag to Reorder)</span></div>
+                    <div class="list-box" style="border-color: var(--primary);">
+                        <div class="list-header" style="background: var(--primary); color: white;">Selected <span>(Drag to Reorder)</span></div>
                         <div id="req_selected" class="list-items"></div>
                     </div>
                 </div>
-
-                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('requests')">Deploy Request Schema</button>
-                
-                <table style="margin-top: 2rem;">
-                    <thead><tr><th>Request Type</th><th>Fields Flow</th><th>QA Checks</th><th>Action</th></tr></thead>
-                    <tbody id="req_list"></tbody>
-                </table>
+                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('requests')">Save Request Schema</button>
+                <tbody id="req_list"></tbody> <table id="req_table_full"><thead><tr><th>Name</th><th>Fields</th><th>QA</th><th>Action</th></tr><tbody id="req_list_body"></tbody></table>
             </div>
         </div>
 
         <div id="tab_disputes" class="tab-content hidden">
             <div class="config-card">
-                <h3 class="section-title">⚖️ Dispute Schema Builder</h3>
+                <h3 class="section-title">⚖️ Dispute Schema</h3>
                 <label>Dispute Name</label>
-                <input type="text" id="disp_name" class="form-control" placeholder="e.g. ATM Cash Dispute">
+                <input type="text" id="disp_name" class="form-control">
                 
-                <label>Quality Check (QA) Questions (One per line)</label>
-                <textarea id="disp_qa" class="form-control" rows="3" placeholder="- Verified exact transaction date?&#10;- Captured ATM ID?"></textarea>
+                <label>Quality Check (QA)</label>
+                <textarea id="disp_qa" class="form-control" rows="3"></textarea>
 
                 <div class="dual-list-container">
                     <div class="list-box">
-                        <div class="list-header">Available Fields</div>
+                        <div class="list-header">Pool</div>
                         <div id="disp_available" class="list-items"></div>
                     </div>
                     <div class="list-box" style="border-color: var(--warning);">
-                        <div class="list-header" style="color: white; background: var(--warning);">Selected Fields</div>
+                        <div class="list-header" style="background: var(--warning); color: black;">Selected</div>
                         <div id="disp_selected" class="list-items"></div>
                     </div>
                 </div>
-
-                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('disputes')">Deploy Dispute Schema</button>
-                
-                <table style="margin-top: 2rem;">
-                    <thead><tr><th>Dispute Type</th><th>Fields Flow</th><th>QA Checks</th><th>Action</th></tr></thead>
-                    <tbody id="disp_list"></tbody>
-                </table>
+                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('disputes')">Save Dispute Schema</button>
+                <table style="margin-top:2rem"><thead><tr><th>Name</th><th>Fields</th><th>Action</th></tr><tbody id="disp_list_body"></tbody></table>
             </div>
         </div>
 
         <div id="tab_mails" class="tab-content hidden">
             <div class="config-card">
-                <h3 class="section-title">✉️ Mail Templates Engine</h3>
-                <label>Mail Subject Name</label>
-                <input type="text" id="mail_sub" class="form-control" placeholder="e.g. Account Hold Request">
-                
-                <label>Mail Body Template (Fixed text)</label>
-                <textarea id="mail_body" class="form-control" rows="6" placeholder="السادة الزملاء،&#10;يرجى التكرم باتخاذ اللازم نحو..."></textarea>
-                
-                <div class="flex gap-2">
-                    <button class="btn btn-primary" style="width: 200px;" onclick="saveMail()">Save Template</button>
-                    <button class="btn btn-danger hidden" id="cancel_mail_btn" onclick="cancelMailEdit()">Cancel Edit</button>
-                </div>
-
-                <table style="margin-top: 2rem;">
-                    <thead><tr><th>Subject</th><th>Preview Template</th><th>Action</th></tr></thead>
-                    <tbody id="mail_list_div"></tbody>
-                </table>
+                <h3 class="section-title">✉️ Mail Templates</h3>
+                <label>Subject</label>
+                <input type="text" id="mail_sub" class="form-control">
+                <label>Template Body</label>
+                <textarea id="mail_body" class="form-control" rows="6"></textarea>
+                <button class="btn btn-primary" onclick="saveMail()">Save Template</button>
+                <table style="margin-top:2rem"><thead><tr><th>Subject</th><th>Action</th></tr><tbody id="mail_list_body"></tbody></table>
             </div>
         </div>
+
     </div>
 
     <script>
+        // --- Firebase Config ---
         const firebaseConfig = {
             apiKey: "AIzaSyB9B7xXTayPP4oALheBcruECwT_ZhEsthc",
             authDomain: "scb-assistant.firebaseapp.com",
@@ -225,134 +185,107 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Global State
+        // --- State ---
         let allFields = [];
         let selectedReq = [];
         let selectedDisp = [];
         let editingSchemaId = null;
         let editingFieldId = null;
-        let editingMailId = null;
 
-        // UI Navigation
+        // --- Navigation ---
         function showTab(t) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab_'+t).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
+            document.getElementById('tab_' + t).classList.remove('hidden');
+            const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.innerText.toLowerCase().includes(t.slice(0,3)));
+            if(activeNav) activeNav.classList.add('active');
         }
 
-        // ==========================================
-        // 1. Fields Logic (Smart Configurations)
-        // ==========================================
+        // --- 1. Fields Logic ---
         function renderFieldSettings(existingData = null) {
-    const type = document.getElementById('f_type').value;
-    const box = document.getElementById('dynamic_f_settings');
-    box.innerHTML = '';
-    
-    if (type === 'number') {
-        box.classList.remove('hidden');
-        box.innerHTML = `
-            <p style="color:var(--accent); font-weight:bold; margin-bottom:10px;">Number Constraints & Masking</p>
-            <div class="grid-2">
-                <div><label>Min Digits/Value</label><input type="number" id="num_min" class="form-control" value="${existingData?.min || ''}"></div>
-                <div><label>Max Digits (Hard Limit)</label><input type="number" id="num_max" class="form-control" value="${existingData?.max || ''}"></div>
-                <div><label>Masking Start</label><input type="number" id="mask_start" class="form-control" value="${existingData?.maskStart || ''}"></div>
-                <div><label>Masking End</label><input type="number" id="mask_end" class="form-control" value="${existingData?.maskEnd || ''}"></div>
-            </div>`;
-    } 
-    else if (type === 'select') {
-        box.classList.remove('hidden');
-        box.innerHTML = `
-            <div style="margin-bottom:10px;">
-                <p style="color:var(--accent); font-weight:bold;">Dropdown Options (Bulk Mode)</p>
-                <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">Write options separated by comma (Option1, Option2...)</p>
-                <textarea id="bulk_select_opts" class="form-control" rows="5" placeholder="Elite, Mass, Staff...">${existingData && existingData.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
-            </div>`;
-    } 
-    else {
-        box.classList.add('hidden');
-    }
-}
-            else if (type === 'select') {
-                    box.classList.remove('hidden');
-                    box.innerHTML = `
-                        <div style="margin-bottom:10px;">
-                            <p style="color:var(--accent); font-weight:bold;">Dropdown Options (Bulk Mode)</p>
-                            <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">Write options separated by comma (e.g. Option1, Option2, Option3)</p>
-                            <textarea id="bulk_select_opts" class="form-control" rows="5" placeholder="Option 1, Option 2, Option 3...">${existingData && existingData.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
+            const type = document.getElementById('f_type').value;
+            const box = document.getElementById('dynamic_f_settings');
+            box.innerHTML = '';
+            
+            if (type === 'number') {
+                box.classList.remove('hidden');
+                box.innerHTML = `
+                    <label style="color:var(--accent)">Constraints & Masking</label>
+                    <div class="grid-2">
+                        <div><label>Min Digits</label><input type="number" id="num_min" class="form-control" value="${existingData?.min || ''}"></div>
+                        <div><label>Max Digits</label><input type="number" id="num_max" class="form-control" value="${existingData?.max || ''}"></div>
+                        <div><label>Mask Start</label><input type="number" id="mask_start" class="form-control" value="${existingData?.maskStart || ''}"></div>
+                        <div><label>Mask End</label><input type="number" id="mask_end" class="form-control" value="${existingData?.maskEnd || ''}"></div>
+                    </div>`;
+            } else if (type === 'select') {
+                box.classList.remove('hidden');
+                box.innerHTML = `
+                    <div class="grid-2">
+                        <div>
+                            <label>Bulk Add (Comma Separated)</label>
+                            <textarea id="bulk_select_opts" class="form-control" rows="5" placeholder="Elite, Mass, Staff..." oninput="syncManualFromBulk()">${existingData?.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
                         </div>
-                    `;
-                }
-                if(existingData && existingData.options) {
-                    existingData.options.forEach(opt => addSelectOption(opt.label, opt.hint));
-                } else {
-                    addSelectOption(); // add one empty row by default
-                }
+                        <div>
+                            <label>Manual Hints / Details</label>
+                            <div id="manual_options_list" style="max-height:150px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:8px;"></div>
+                        </div>
+                    </div>`;
+                syncManualFromBulk();
             } else {
                 box.classList.add('hidden');
             }
         }
 
-        function addSelectOption(labelVal = '', hintVal = '') {
-            const list = document.getElementById('select_options_list');
-            const row = document.createElement('div');
-            row.className = 'opt-row';
-            row.innerHTML = `
-                <input type="text" class="form-control opt-label" style="margin:0; flex:1;" placeholder="Option Name (e.g. Elite)" value="${labelVal}">
-                <input type="text" class="form-control opt-hint" style="margin:0; flex:2;" placeholder="Hint / Fee (e.g. Replacement Fee 1000 EGP)" value="${hintVal}">
-                <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">X</button>
-            `;
-            list.appendChild(row);
+        function syncManualFromBulk() {
+            const bulk = document.getElementById('bulk_select_opts').value;
+            const container = document.getElementById('manual_options_list');
+            if(!container) return;
+            const items = bulk.split(',').map(i => i.trim()).filter(i => i !== "");
+            container.innerHTML = items.map(item => `
+                <div style="margin-bottom:5px; font-size:0.7rem; color:var(--accent)">
+                    ${item}: <input type="text" class="manual-hint form-control" style="margin:0; padding:2px 5px; height:25px;" data-for="${item}" placeholder="Add Hint/Fee">
+                </div>
+            `).join('');
         }
 
         async function saveField() {
-    const name = document.getElementById('f_name').value.trim();
-    const type = document.getElementById('f_type').value;
-    if(!name) return alert("Field Name is required!");
+            const name = document.getElementById('f_name').value.trim();
+            const type = document.getElementById('f_type').value;
+            if(!name) return alert("Enter Name");
 
-    let fieldData = { label: name, type: type };
+            let fieldData = { label: name, type: type };
+            if (type === 'number') {
+                fieldData.min = document.getElementById('num_min').value;
+                fieldData.max = document.getElementById('num_max').value;
+                fieldData.maskStart = document.getElementById('mask_start').value;
+                fieldData.maskEnd = document.getElementById('mask_end').value;
+            } else if (type === 'select') {
+                const bulk = document.getElementById('bulk_select_opts').value;
+                const manualHints = document.querySelectorAll('.manual-hint');
+                fieldData.options = bulk.split(',').map(item => {
+                    const label = item.trim();
+                    const hintInput = Array.from(manualHints).find(h => h.getAttribute('data-for') === label);
+                    return { label: label, hint: hintInput ? hintInput.value : "" };
+                }).filter(o => o.label !== "");
+            }
 
-    if (type === 'number') {
-        fieldData.min = document.getElementById('num_min').value;
-        fieldData.max = document.getElementById('num_max').value;
-        fieldData.maskStart = document.getElementById('mask_start').value;
-        fieldData.maskEnd = document.getElementById('mask_end').value;
-    } 
-    else if (type === 'select') {
-        const bulkText = document.getElementById('bulk_select_opts').value;
-        let opts = bulkText.split(',').map(item => ({ label: item.trim(), hint: "" })).filter(item => item.label !== "");
-        fieldData.options = opts;
-    }
+            if (editingFieldId && editingFieldId !== name) {
+                await db.collection("fields_pool").doc(editingFieldId).delete();
+            }
+            await db.collection("fields_pool").doc(name).set(fieldData);
+            alert("✅ Field Saved!");
+            location.reload();
+        }
 
-    if (editingFieldId && editingFieldId !== name) {
-        await db.collection("fields_pool").doc(editingFieldId).delete();
-    }
-
-    await db.collection("fields_pool").doc(name).set(fieldData);
-    alert("✅ Field Saved Successfully!");
-    cancelFieldEdit();
-}
         function loadFields() {
             db.collection("fields_pool").onSnapshot(snap => {
                 allFields = [];
                 let html = "";
                 snap.forEach(doc => {
-                    const d = doc.data(); d.id = doc.id;
-                    allFields.push(d);
-                    
-                    let configs = "-";
-                    if(d.type === 'number') configs = `Min: ${d.min||'N/A'} | Max: ${d.max||'N/A'}`;
-                    if(d.type === 'select') configs = `${d.options ? d.options.length : 0} Options configured`;
-
-                    html += `<tr>
-                        <td><b>${d.label}</b></td>
-                        <td><span class="tag">${d.type}</span></td>
-                        <td style="font-size:0.8rem; color:var(--text-muted)">${configs}</td>
-                        <td>
-                            <button class="btn btn-sm btn-edit" onclick="editField('${d.id}')">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteDoc('fields_pool','${d.id}')">Del</button>
-                        </td>
-                    </tr>`;
+                    const d = doc.data(); d.id = doc.id; allFields.push(d);
+                    html += `<tr><td><b>${d.label}</b></td><td><span class="tag">${d.type}</span></td><td>-</td>
+                        <td><button class="btn btn-sm btn-edit" onclick="editField('${d.id}')">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDoc('fields_pool','${d.id}')">Del</button></td></tr>`;
                 });
                 document.getElementById('all_fields_list').innerHTML = html;
                 renderDualLists();
@@ -361,265 +294,145 @@
 
         async function editField(id) {
             const doc = await db.collection('fields_pool').doc(id).get();
-            const data = doc.data();
-            document.getElementById('f_name').value = data.label;
-            document.getElementById('f_type').value = data.type;
-            renderFieldSettings(data);
-            
+            const d = doc.data();
+            document.getElementById('f_name').value = d.label;
+            document.getElementById('f_type').value = d.type;
             editingFieldId = id;
-            document.getElementById('cancel_edit_f_btn').classList.remove('hidden');
-            window.scrollTo(0,0);
+            renderFieldSettings(d);
+            document.getElementById('cancel_f_edit').classList.remove('hidden');
         }
 
-        function cancelFieldEdit() {
-            editingFieldId = null;
-            document.getElementById('f_name').value = '';
-            document.getElementById('f_type').value = 'text';
-            renderFieldSettings();
-            document.getElementById('cancel_edit_f_btn').classList.add('hidden');
-        }
+        function cancelFieldEdit() { editingFieldId = null; location.reload(); }
 
-        // ==========================================
-        // 2. Dual List Logic (Requests & Disputes)
-        // ==========================================
+        // --- 2. Schema Logic ---
         function renderDualLists() {
-            renderList('requests');
-            renderList('disputes');
-        }
+            ['requests', 'disputes'].forEach(mode => {
+                const isReq = mode === 'requests';
+                const selected = isReq ? selectedReq : selectedDisp;
+                const availCont = document.getElementById(mode + '_available');
+                const selCont = document.getElementById(mode + '_selected');
+                
+                availCont.innerHTML = "";
+                allFields.forEach(f => {
+                    if (!selected.find(s => s.id === f.id)) {
+                        const el = document.createElement('div');
+                        el.className = 'item';
+                        el.innerHTML = `<span>${f.label}</span> <button class="btn btn-sm btn-primary" onclick="moveToSelected('${mode}','${f.id}')">+</button>`;
+                        availCont.appendChild(el);
+                    }
+                });
 
-        function renderList(mode) {
-            const isReq = mode === 'requests';
-            const selected = isReq ? selectedReq : selectedDisp;
-            const availableContainer = document.getElementById(isReq ? 'req_available' : 'disp_available');
-            const selectedContainer = document.getElementById(isReq ? 'req_selected' : 'disp_selected');
-
-            // Available List
-            availableContainer.innerHTML = "";
-            allFields.forEach(f => {
-                if (!selected.find(s => s.id === f.id)) {
+                selCont.innerHTML = "";
+                selected.forEach((f, i) => {
                     const el = document.createElement('div');
                     el.className = 'item';
-                    el.innerHTML = `<span>${f.label}</span> <button class="btn btn-sm btn-primary" onclick="moveToSelected('${mode}', '${f.id}')">Add +</button>`;
-                    availableContainer.appendChild(el);
-                }
-            });
-
-            // Selected List (Draggable)
-            selectedContainer.innerHTML = "";
-            selected.forEach((f, index) => {
-                const el = document.createElement('div');
-                el.className = 'item selected';
-                el.draggable = true;
-                el.innerHTML = `<span><span style="color:var(--text-muted); margin-right:5px;">☰</span> ${f.label}</span> <button class="btn btn-sm btn-danger" onclick="removeFromSelected('${mode}', ${index})">×</button>`;
-                
-                el.addEventListener('dragstart', () => el.classList.add('dragging'));
-                el.addEventListener('dragend', () => {
-                    el.classList.remove('dragging');
-                    updateOrderFromUI(mode);
+                    el.draggable = true;
+                    el.innerHTML = `<span>☰ ${f.label}</span> <button class="btn btn-sm btn-danger" onclick="removeFromSelected('${mode}',${i})">×</button>`;
+                    el.addEventListener('dragstart', (e) => { el.classList.add('dragging'); e.dataTransfer.setData('text/plain', i); });
+                    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+                    selCont.appendChild(el);
                 });
-                selectedContainer.appendChild(el);
-            });
 
-            // Drag Over Handling
-            selectedContainer.addEventListener('dragover', e => {
-                e.preventDefault();
-                const dragging = document.querySelector('.dragging');
-                if(!dragging) return;
-                const afterElement = getDragAfterElement(selectedContainer, e.clientY);
-                if (afterElement == null) selectedContainer.appendChild(dragging);
-                else selectedContainer.insertBefore(dragging, afterElement);
+                selCont.addEventListener('dragover', e => e.preventDefault());
+                selCont.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const fromIndex = e.dataTransfer.getData('text/plain');
+                    const toIndex = Array.from(selCont.children).indexOf(e.target.closest('.item'));
+                    if(toIndex !== -1) {
+                        const list = isReq ? selectedReq : selectedDisp;
+                        const movedItem = list.splice(fromIndex, 1)[0];
+                        list.splice(toIndex, 0, movedItem);
+                        renderDualLists();
+                    }
+                });
             });
         }
 
         function moveToSelected(mode, id) {
-            const field = allFields.find(f => f.id === id);
-            if (mode === 'requests') selectedReq.push(field); else selectedDisp.push(field);
-            renderList(mode);
+            const f = allFields.find(x => x.id === id);
+            if(mode === 'requests') selectedReq.push(f); else selectedDisp.push(f);
+            renderDualLists();
         }
 
-        function removeFromSelected(mode, index) {
-            if (mode === 'requests') selectedReq.splice(index, 1); else selectedDisp.splice(index, 1);
-            renderList(mode);
+        function removeFromSelected(mode, i) {
+            if(mode === 'requests') selectedReq.splice(i, 1); else selectedDisp.splice(i, 1);
+            renderDualLists();
         }
 
-        function updateOrderFromUI(mode) {
-            const container = document.getElementById(mode === 'requests' ? 'req_selected' : 'disp_selected');
-            const labels = [...container.querySelectorAll('span:not([style])')].map(s => s.innerText.trim());
-            const newList = labels.map(l => allFields.find(f => f.label === l)).filter(f => f); // filter nulls just in case
-            if (mode === 'requests') selectedReq = newList; else selectedDisp = newList;
-        }
-
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.item.selected:not(.dragging)')];
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-                else return closest;
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-
-        // ==========================================
-        // 3. Schema Saving & Loading
-        // ==========================================
         async function saveSchema(mode) {
-    const isReq = mode === 'requests';
-    
-    // تحديد العناصر بناءً على المود (Request أو Dispute)
-    const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
-    const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa');
-    
-    const name = nameInput.value.trim();
-    const fields = isReq ? selectedReq : selectedDisp;
-    
-    // تحويل أسئلة الـ QA لمصفوفة (Array)
-    const qaList = qaInput.value.split('\n')
-                                .map(q => q.trim())
-                                .filter(q => q !== "");
+            const isReq = mode === 'requests';
+            const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
+            const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa');
+            const name = nameInput.value.trim();
+            const fields = isReq ? selectedReq : selectedDisp;
+            const qa = qaInput.value.split('\n').filter(q => q.trim() !== "");
 
-    // 1. التحقق من البيانات (Validation)
-    if (!name) {
-        return alert("⚠️ Please enter the Name (e.g. Online Limit)");
-    }
-    if (fields.length === 0) {
-        return alert("⚠️ Please select at least one field from the Available list");
-    }
+            if(!name || fields.length === 0) return alert("Enter Name and select fields!");
 
-    try {
-        // 2. معالجة حالة التعديل وتغيير الاسم
-        // لو بنعدل وغيرنا اسم الريكويست، بنمسح القديم عشان ميتكررش
-        if (editingSchemaId && editingSchemaId !== name) {
-            await db.collection(isReq ? "request_types" : "dispute_types").doc(editingSchemaId).delete();
+            if(editingSchemaId && editingSchemaId !== name) {
+                await db.collection(isReq ? "request_types" : "dispute_types").doc(editingSchemaId).delete();
+            }
+            await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({ fields, qa });
+            alert("✅ Schema Saved!");
+            location.reload();
         }
 
-        // 3. الحفظ في Firebase (الحقول + أسئلة الـ QA)
-        await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({
-            fields: fields,
-            qa: qaList
-        });
-
-        alert("✅ Schema & QA deployed successfully!");
-
-        // 4. إعادة تهيئة الواجهة (Reset UI)
-        nameInput.value = "";
-        qaInput.value = "";
-        
-        if (isReq) {
-            selectedReq = [];
-        } else {
-            selectedDisp = [];
-        }
-        
-        editingSchemaId = null; // إنهاء وضع التعديل
-        renderList(mode);       // إعادة رسم القوائم
-
-    } catch (error) {
-        console.error("Error saving schema: ", error);
-        alert("❌ Error saving to database. Please check connection.");
-    }
-}
-
-        function loadSchemas(mode) {
-            const col = mode === 'requests' ? "request_types" : "dispute_types";
-            db.collection(col).onSnapshot(snap => {
+        function loadSchemas() {
+            db.collection("request_types").onSnapshot(snap => {
                 let html = "";
                 snap.forEach(doc => {
-                    const d = doc.data();
-                    const fieldTags = d.fields.map(f => `<span class="tag">${f.label}</span>`).join(' ');
-                    const qaCount = d.qa ? d.qa.length : 0;
-                    
-                    html += `<tr>
-                        <td><b>${doc.id}</b></td>
-                        <td>${fieldTags}</td>
-                        <td style="font-size:0.8rem; color:var(--text-muted)">${qaCount} Questions</td>
-                        <td>
-                            <button class="btn btn-sm btn-edit" onclick="editSchema('${mode}', '${doc.id}')">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteDoc('${col}','${doc.id}')">Del</button>
-                        </td>
-                    </tr>`;
+                    html += `<tr><td><b>${doc.id}</b></td><td>${doc.data().fields.length} Fields</td><td>${doc.data().qa?.length||0}</td>
+                    <td><button class="btn btn-sm btn-edit" onclick="editSchema('requests','${doc.id}')">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteDoc('request_types','${doc.id}')">Del</button></td></tr>`;
                 });
-                document.getElementById(mode === 'requests' ? 'req_list' : 'disp_list').innerHTML = html;
+                document.getElementById('req_list_body').innerHTML = html;
+            });
+            db.collection("dispute_types").onSnapshot(snap => {
+                let html = "";
+                snap.forEach(doc => {
+                    html += `<tr><td><b>${doc.id}</b></td><td>${doc.data().fields.length} Fields</td>
+                    <td><button class="btn btn-sm btn-edit" onclick="editSchema('disputes','${doc.id}')">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteDoc('dispute_types','${doc.id}')">Del</button></td></tr>`;
+                });
+                document.getElementById('disp_list_body').innerHTML = html;
             });
         }
 
         async function editSchema(mode, id) {
-            const isReq = mode === 'requests';
-            const col = isReq ? "request_types" : "dispute_types";
+            const col = mode === 'requests' ? "request_types" : "dispute_types";
             const doc = await db.collection(col).doc(id).get();
-            const data = doc.data();
-
-            document.getElementById(isReq ? 'req_name' : 'disp_name').value = id;
-            document.getElementById(isReq ? 'req_qa' : 'disp_qa').value = data.qa ? data.qa.join('\n') : "";
-            if(isReq) selectedReq = [...data.fields]; else selectedDisp = [...data.fields];
-            
+            const d = doc.data();
+            document.getElementById(mode === 'requests' ? 'req_name' : 'disp_name').value = id;
+            document.getElementById(mode === 'requests' ? 'req_qa' : 'disp_qa').value = d.qa ? d.qa.join('\n') : "";
+            if(mode === 'requests') selectedReq = [...d.fields]; else selectedDisp = [...d.fields];
             editingSchemaId = id;
-            renderList(mode);
+            renderDualLists();
             window.scrollTo(0,0);
         }
 
-        // ==========================================
-        // 4. Mail Templates Engine
-        // ==========================================
+        // --- 3. Mails ---
         async function saveMail() {
             const sub = document.getElementById('mail_sub').value.trim();
             const body = document.getElementById('mail_body').value.trim();
-            if(!sub) return alert("Subject is required!");
-
-            if (editingMailId && editingMailId !== sub) {
-                await db.collection("mail_configs").doc(editingMailId).delete();
-            }
-
+            if(!sub) return alert("Subject required");
             await db.collection("mail_configs").doc(sub).set({ name: sub, template: body });
-            alert("Mail Template Saved!");
-            cancelMailEdit();
+            alert("✅ Template Saved!");
+            location.reload();
         }
 
         function loadMails() {
             db.collection("mail_configs").onSnapshot(snap => {
                 let html = "";
                 snap.forEach(doc => {
-                    const data = doc.data();
-                    const preview = data.template ? data.template.substring(0, 50) + '...' : 'No template';
-                    html += `<tr>
-                        <td><b>${data.name}</b></td>
-                        <td style="font-size:0.8rem; color:var(--text-muted); white-space:pre-wrap;">${preview}</td>
-                        <td>
-                            <button class="btn btn-sm btn-edit" onclick="editMail('${doc.id}')">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteDoc('mail_configs','${doc.id}')">Del</button>
-                        </td>
-                    </tr>`;
+                    html += `<tr><td><b>${doc.id}</b></td><td><button class="btn btn-sm btn-danger" onclick="deleteDoc('mail_configs','${doc.id}')">Del</button></td></tr>`;
                 });
-                document.getElementById('mail_list_div').innerHTML = html;
+                document.getElementById('mail_list_body').innerHTML = html;
             });
         }
 
-        async function editMail(id) {
-            const doc = await db.collection("mail_configs").doc(id).get();
-            document.getElementById('mail_sub').value = doc.data().name;
-            document.getElementById('mail_body').value = doc.data().template || "";
-            editingMailId = id;
-            document.getElementById('cancel_mail_btn').classList.remove('hidden');
-            window.scrollTo(0,0);
-        }
+        async function deleteDoc(c, i) { if(confirm("Are you sure?")) await db.collection(c).doc(i).delete(); }
 
-        function cancelMailEdit() {
-            editingMailId = null;
-            document.getElementById('mail_sub').value = '';
-            document.getElementById('mail_body').value = '';
-            document.getElementById('cancel_mail_btn').classList.add('hidden');
-        }
-
-        // Shared Utility
-        async function deleteDoc(c, i) { if(confirm("Are you sure you want to delete this item?")) await db.collection(c).doc(i).delete(); }
-
-        // Init
-        window.onload = () => { 
-            loadFields(); 
-            loadSchemas('requests'); 
-            loadSchemas('disputes'); 
-            loadMails(); 
-            renderFieldSettings(); // setup initial field UI
-        };
+        window.onload = () => { loadFields(); loadSchemas(); loadMails(); showTab('fields'); };
     </script>
 </body>
 </html>
