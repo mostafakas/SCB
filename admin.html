@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCB Admin | Enterprise Controller v2.0</title>
+    <title>SCB Admin | Enterprise Controller v2.1</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
@@ -17,7 +17,7 @@
         body { background: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         
         /* Sidebar */
-        .sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 10px 0 15px rgba(0,0,0,0.2); z-index: 10; }
+        .sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; }
         .brand { padding: 1.5rem; font-weight: 800; font-size: 1.2rem; color: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
         .nav-menu { flex: 1; padding: 1rem; display: flex; flex-direction: column; gap: 5px; }
         .nav-item { padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; gap: 12px; font-weight: 600; transition: 0.2s; }
@@ -27,7 +27,7 @@
         /* Main Content */
         .main-content { flex: 1; padding: 2rem; overflow-y: auto; scroll-behavior: smooth; background: radial-gradient(circle at top right, #1e293b, #0f172a); }
         .config-card { background: var(--bg-card); border-radius: 15px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .section-title { font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .section-title { font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; font-weight: 700; }
         
         /* Forms & Buttons */
         label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; }
@@ -39,23 +39,17 @@
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
         .btn-accent { background: var(--accent); color: white; width: 100%; font-size: 1rem; }
         .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
-        .btn-danger:hover { background: var(--danger); color: white; }
-        .btn-edit { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
-        .btn-edit:hover { background: var(--success); color: white; }
+        .btn-edit { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); margin-right: 5px;}
 
         /* Dual List */
         .dual-list-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 1rem; }
-        .list-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; height: 400px; display: flex; flex-direction: column; overflow: hidden; }
-        .list-header { background: rgba(255,255,255,0.05); padding: 12px; font-weight: 700; color: var(--accent); border-bottom: 1px solid var(--border); font-size: 0.8rem; display: flex; justify-content: space-between; }
+        .list-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; height: 350px; display: flex; flex-direction: column; overflow: hidden; }
+        .list-header { background: rgba(255,255,255,0.05); padding: 12px; font-weight: 700; color: var(--accent); border-bottom: 1px solid var(--border); font-size: 0.8rem; }
         .list-items { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-        .item { background: var(--bg-card); border: 1px solid var(--border); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: grab; transition: 0.2s; }
+        .item { background: var(--bg-card); border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
         .item:hover { border-color: var(--accent); background: rgba(14, 165, 233, 0.05); }
         .item.dragging { opacity: 0.5; border: 2px dashed var(--accent); }
 
-        /* Bulk & Options */
-        .settings-box { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 1.5rem; border: 1px dashed var(--border); margin-bottom: 1.5rem; }
-        .opt-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
         th { text-align: left; padding: 1rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
         td { padding: 1rem; border-bottom: 1px solid var(--border); }
@@ -67,10 +61,7 @@
 <body>
 
     <aside class="sidebar">
-        <div class="brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            SCB ADMIN PRO
-        </div>
+        <div class="brand">SCB ADMIN PRO</div>
         <nav class="nav-menu">
             <div class="nav-item active" onclick="showTab('fields')">🏗️ Fields Pool</div>
             <div class="nav-item" onclick="showTab('requests')">📝 Request Builder</div>
@@ -85,18 +76,18 @@
             <div class="config-card">
                 <h3 class="section-title">🏗️ Smart Fields Builder</h3>
                 <div class="grid-2">
-                    <div><label>Field Label</label><input type="text" id="f_name" class="form-control" placeholder="e.g. Card Number"></div>
+                    <div><label>Field Label (Name)</label><input type="text" id="f_name" class="form-control" placeholder="e.g. Card Category"></div>
                     <div><label>Type</label>
                         <select id="f_type" class="form-control" onchange="renderFieldSettings()">
                             <option value="text">Text</option>
                             <option value="number">Number (Limits & Masking)</option>
                             <option value="date">Date</option>
-                            <option value="select">Dropdown (Bulk / Manual)</option>
+                            <option value="select">Dropdown (Bulk Options)</option>
                         </select>
                     </div>
                 </div>
 
-                <div id="dynamic_f_settings" class="settings-box hidden"></div>
+                <div id="dynamic_f_settings" style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 10px; border: 1px dashed var(--border); margin-bottom: 1.5rem;" class="hidden"></div>
 
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-primary" onclick="saveField()">Save Field</button>
@@ -121,16 +112,16 @@
 
                 <div class="dual-list-container">
                     <div class="list-box">
-                        <div class="list-header">Pool <span>(Click to Add)</span></div>
+                        <div class="list-header">Available Fields <span>(+)</span></div>
                         <div id="req_available" class="list-items"></div>
                     </div>
                     <div class="list-box" style="border-color: var(--primary);">
-                        <div class="list-header" style="background: var(--primary); color: white;">Selected <span>(Drag to Reorder)</span></div>
+                        <div class="list-header" style="background: var(--primary); color: white;">Selected Fields <span>(Drag to reorder)</span></div>
                         <div id="req_selected" class="list-items"></div>
                     </div>
                 </div>
-                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('requests')">Save Request Schema</button>
-                <tbody id="req_list"></tbody> <table id="req_table_full"><thead><tr><th>Name</th><th>Fields</th><th>QA</th><th>Action</th></tr><tbody id="req_list_body"></tbody></table>
+                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('requests')">Deploy Request Schema</button>
+                <table><thead><tr><th>Name</th><th>Fields</th><th>QA</th><th>Action</th></tr><tbody id="req_list_body"></tbody></table>
             </div>
         </div>
 
@@ -145,35 +136,38 @@
 
                 <div class="dual-list-container">
                     <div class="list-box">
-                        <div class="list-header">Pool</div>
+                        <div class="list-header">Available Fields</div>
                         <div id="disp_available" class="list-items"></div>
                     </div>
                     <div class="list-box" style="border-color: var(--warning);">
-                        <div class="list-header" style="background: var(--warning); color: black;">Selected</div>
+                        <div class="list-header" style="background: var(--warning); color: black;">Selected Fields</div>
                         <div id="disp_selected" class="list-items"></div>
                     </div>
                 </div>
-                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('disputes')">Save Dispute Schema</button>
-                <table style="margin-top:2rem"><thead><tr><th>Name</th><th>Fields</th><th>Action</th></tr><tbody id="disp_list_body"></tbody></table>
+                <button class="btn btn-accent" style="margin-top: 2rem;" onclick="saveSchema('disputes')">Deploy Dispute Schema</button>
+                <table><thead><tr><th>Name</th><th>Fields</th><th>Action</th></tr><tbody id="disp_list_body"></tbody></table>
             </div>
         </div>
 
         <div id="tab_mails" class="tab-content hidden">
             <div class="config-card">
                 <h3 class="section-title">✉️ Mail Templates</h3>
-                <label>Subject</label>
-                <input type="text" id="mail_sub" class="form-control">
-                <label>Template Body</label>
-                <textarea id="mail_body" class="form-control" rows="6"></textarea>
-                <button class="btn btn-primary" onclick="saveMail()">Save Template</button>
-                <table style="margin-top:2rem"><thead><tr><th>Subject</th><th>Action</th></tr><tbody id="mail_list_body"></tbody></table>
+                <label>Mail Subject</label>
+                <input type="text" id="mail_sub" class="form-control" placeholder="e.g. Account Hold">
+                <label>Mail Body Template (Fixed text)</label>
+                <textarea id="mail_body" class="form-control" rows="6" placeholder="السادة الزملاء..."></textarea>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="saveMail()">Save Template</button>
+                    <button id="cancel_mail_btn" class="btn btn-danger hidden" onclick="cancelMailEdit()">Cancel Edit</button>
+                </div>
+                
+                <table><thead><tr><th>Subject</th><th>Template Preview</th><th>Action</th></tr><tbody id="mail_list_body"></tbody></table>
             </div>
         </div>
-
     </div>
 
     <script>
-        // --- Firebase Config ---
         const firebaseConfig = {
             apiKey: "AIzaSyB9B7xXTayPP4oALheBcruECwT_ZhEsthc",
             authDomain: "scb-assistant.firebaseapp.com",
@@ -185,14 +179,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- State ---
         let allFields = [];
         let selectedReq = [];
         let selectedDisp = [];
         let editingSchemaId = null;
         let editingFieldId = null;
+        let editingMailId = null;
 
-        // --- Navigation ---
         function showTab(t) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -201,7 +194,7 @@
             if(activeNav) activeNav.classList.add('active');
         }
 
-        // --- 1. Fields Logic ---
+        // --- Fields Setup ---
         function renderFieldSettings(existingData = null) {
             const type = document.getElementById('f_type').value;
             const box = document.getElementById('dynamic_f_settings');
@@ -210,8 +203,8 @@
             if (type === 'number') {
                 box.classList.remove('hidden');
                 box.innerHTML = `
-                    <label style="color:var(--accent)">Constraints & Masking</label>
-                    <div class="grid-2">
+                    <label style="color:var(--accent); font-size:0.9rem;">Constraints & Masking</label>
+                    <div class="grid-2" style="margin-top:10px;">
                         <div><label>Min Digits</label><input type="number" id="num_min" class="form-control" value="${existingData?.min || ''}"></div>
                         <div><label>Max Digits</label><input type="number" id="num_max" class="form-control" value="${existingData?.max || ''}"></div>
                         <div><label>Mask Start</label><input type="number" id="mask_start" class="form-control" value="${existingData?.maskStart || ''}"></div>
@@ -220,38 +213,19 @@
             } else if (type === 'select') {
                 box.classList.remove('hidden');
                 box.innerHTML = `
-                    <div class="grid-2">
-                        <div>
-                            <label>Bulk Add (Comma Separated)</label>
-                            <textarea id="bulk_select_opts" class="form-control" rows="5" placeholder="Elite, Mass, Staff..." oninput="syncManualFromBulk()">${existingData?.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
-                        </div>
-                        <div>
-                            <label>Manual Hints / Details</label>
-                            <div id="manual_options_list" style="max-height:150px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:8px;"></div>
-                        </div>
-                    </div>`;
-                syncManualFromBulk();
+                    <label style="color:var(--accent); font-size:0.9rem;">Dropdown Options (Bulk Mode)</label>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Add options separated by a comma (e.g. Option 1, Option 2)</p>
+                    <textarea id="bulk_select_opts" class="form-control" rows="4">${existingData?.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
+                `;
             } else {
                 box.classList.add('hidden');
             }
         }
 
-        function syncManualFromBulk() {
-            const bulk = document.getElementById('bulk_select_opts').value;
-            const container = document.getElementById('manual_options_list');
-            if(!container) return;
-            const items = bulk.split(',').map(i => i.trim()).filter(i => i !== "");
-            container.innerHTML = items.map(item => `
-                <div style="margin-bottom:5px; font-size:0.7rem; color:var(--accent)">
-                    ${item}: <input type="text" class="manual-hint form-control" style="margin:0; padding:2px 5px; height:25px;" data-for="${item}" placeholder="Add Hint/Fee">
-                </div>
-            `).join('');
-        }
-
         async function saveField() {
             const name = document.getElementById('f_name').value.trim();
             const type = document.getElementById('f_type').value;
-            if(!name) return alert("Enter Name");
+            if(!name) return alert("Field Name is required!");
 
             let fieldData = { label: name, type: type };
             if (type === 'number') {
@@ -261,12 +235,7 @@
                 fieldData.maskEnd = document.getElementById('mask_end').value;
             } else if (type === 'select') {
                 const bulk = document.getElementById('bulk_select_opts').value;
-                const manualHints = document.querySelectorAll('.manual-hint');
-                fieldData.options = bulk.split(',').map(item => {
-                    const label = item.trim();
-                    const hintInput = Array.from(manualHints).find(h => h.getAttribute('data-for') === label);
-                    return { label: label, hint: hintInput ? hintInput.value : "" };
-                }).filter(o => o.label !== "");
+                fieldData.options = bulk.split(',').map(item => ({ label: item.trim(), hint: "" })).filter(o => o.label !== "");
             }
 
             if (editingFieldId && editingFieldId !== name) {
@@ -274,7 +243,10 @@
             }
             await db.collection("fields_pool").doc(name).set(fieldData);
             alert("✅ Field Saved!");
-            location.reload();
+            editingFieldId = null;
+            document.getElementById('f_name').value = '';
+            renderFieldSettings();
+            document.getElementById('cancel_f_edit').classList.add('hidden');
         }
 
         function loadFields() {
@@ -300,11 +272,15 @@
             editingFieldId = id;
             renderFieldSettings(d);
             document.getElementById('cancel_f_edit').classList.remove('hidden');
+            window.scrollTo(0,0);
         }
 
-        function cancelFieldEdit() { editingFieldId = null; location.reload(); }
+        function cancelFieldEdit() {
+            editingFieldId = null; document.getElementById('f_name').value = ''; renderFieldSettings();
+            document.getElementById('cancel_f_edit').classList.add('hidden');
+        }
 
-        // --- 2. Schema Logic ---
+        // --- Dual Lists & Schema ---
         function renderDualLists() {
             ['requests', 'disputes'].forEach(mode => {
                 const isReq = mode === 'requests';
@@ -315,8 +291,7 @@
                 availCont.innerHTML = "";
                 allFields.forEach(f => {
                     if (!selected.find(s => s.id === f.id)) {
-                        const el = document.createElement('div');
-                        el.className = 'item';
+                        const el = document.createElement('div'); el.className = 'item';
                         el.innerHTML = `<span>${f.label}</span> <button class="btn btn-sm btn-primary" onclick="moveToSelected('${mode}','${f.id}')">+</button>`;
                         availCont.appendChild(el);
                     }
@@ -324,26 +299,20 @@
 
                 selCont.innerHTML = "";
                 selected.forEach((f, i) => {
-                    const el = document.createElement('div');
-                    el.className = 'item';
-                    el.draggable = true;
+                    const el = document.createElement('div'); el.className = 'item'; el.draggable = true;
                     el.innerHTML = `<span>☰ ${f.label}</span> <button class="btn btn-sm btn-danger" onclick="removeFromSelected('${mode}',${i})">×</button>`;
-                    el.addEventListener('dragstart', (e) => { el.classList.add('dragging'); e.dataTransfer.setData('text/plain', i); });
-                    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+                    el.addEventListener('dragstart', () => el.classList.add('dragging'));
+                    el.addEventListener('dragend', () => { el.classList.remove('dragging'); updateOrderFromUI(mode); });
                     selCont.appendChild(el);
                 });
 
-                selCont.addEventListener('dragover', e => e.preventDefault());
-                selCont.addEventListener('drop', e => {
+                selCont.addEventListener('dragover', e => {
                     e.preventDefault();
-                    const fromIndex = e.dataTransfer.getData('text/plain');
-                    const toIndex = Array.from(selCont.children).indexOf(e.target.closest('.item'));
-                    if(toIndex !== -1) {
-                        const list = isReq ? selectedReq : selectedDisp;
-                        const movedItem = list.splice(fromIndex, 1)[0];
-                        list.splice(toIndex, 0, movedItem);
-                        renderDualLists();
-                    }
+                    const dragging = document.querySelector('.dragging');
+                    if(!dragging) return;
+                    const siblings = [...selCont.querySelectorAll('.item:not(.dragging)')];
+                    let nextSibling = siblings.find(sib => e.clientY <= sib.getBoundingClientRect().top + sib.offsetHeight / 2);
+                    selCont.insertBefore(dragging, nextSibling || null);
                 });
             });
         }
@@ -359,13 +328,20 @@
             renderDualLists();
         }
 
+        function updateOrderFromUI(mode) {
+            const container = document.getElementById(mode + '_selected');
+            const labels = [...container.querySelectorAll('span:not([style])')].map(s => s.innerText.replace('☰ ', '').trim());
+            const newList = labels.map(l => allFields.find(f => f.label === l)).filter(f => f);
+            if(mode === 'requests') selectedReq = newList; else selectedDisp = newList;
+        }
+
         async function saveSchema(mode) {
             const isReq = mode === 'requests';
             const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
             const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa');
             const name = nameInput.value.trim();
             const fields = isReq ? selectedReq : selectedDisp;
-            const qa = qaInput.value.split('\n').filter(q => q.trim() !== "");
+            const qa = qaInput.value.split('\n').map(q => q.trim()).filter(q => q !== "");
 
             if(!name || fields.length === 0) return alert("Enter Name and select fields!");
 
@@ -374,14 +350,19 @@
             }
             await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({ fields, qa });
             alert("✅ Schema Saved!");
-            location.reload();
+            
+            nameInput.value = ""; qaInput.value = "";
+            if(isReq) selectedReq = []; else selectedDisp = [];
+            editingSchemaId = null;
+            renderDualLists();
         }
 
         function loadSchemas() {
             db.collection("request_types").onSnapshot(snap => {
                 let html = "";
                 snap.forEach(doc => {
-                    html += `<tr><td><b>${doc.id}</b></td><td>${doc.data().fields.length} Fields</td><td>${doc.data().qa?.length||0}</td>
+                    const d = doc.data();
+                    html += `<tr><td><b>${doc.id}</b></td><td>${d.fields.length} Fields</td><td>${d.qa?.length||0}</td>
                     <td><button class="btn btn-sm btn-edit" onclick="editSchema('requests','${doc.id}')">Edit</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteDoc('request_types','${doc.id}')">Del</button></td></tr>`;
                 });
@@ -390,7 +371,8 @@
             db.collection("dispute_types").onSnapshot(snap => {
                 let html = "";
                 snap.forEach(doc => {
-                    html += `<tr><td><b>${doc.id}</b></td><td>${doc.data().fields.length} Fields</td>
+                    const d = doc.data();
+                    html += `<tr><td><b>${doc.id}</b></td><td>${d.fields.length} Fields</td>
                     <td><button class="btn btn-sm btn-edit" onclick="editSchema('disputes','${doc.id}')">Edit</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteDoc('dispute_types','${doc.id}')">Del</button></td></tr>`;
                 });
@@ -410,24 +392,44 @@
             window.scrollTo(0,0);
         }
 
-        // --- 3. Mails ---
+        // --- Mails ---
         async function saveMail() {
             const sub = document.getElementById('mail_sub').value.trim();
             const body = document.getElementById('mail_body').value.trim();
-            if(!sub) return alert("Subject required");
+            if(!sub) return alert("Subject is required");
+            if (editingMailId && editingMailId !== sub) {
+                await db.collection("mail_configs").doc(editingMailId).delete();
+            }
             await db.collection("mail_configs").doc(sub).set({ name: sub, template: body });
             alert("✅ Template Saved!");
-            location.reload();
+            cancelMailEdit();
         }
 
         function loadMails() {
             db.collection("mail_configs").onSnapshot(snap => {
                 let html = "";
                 snap.forEach(doc => {
-                    html += `<tr><td><b>${doc.id}</b></td><td><button class="btn btn-sm btn-danger" onclick="deleteDoc('mail_configs','${doc.id}')">Del</button></td></tr>`;
+                    const preview = doc.data().template ? doc.data().template.substring(0, 40) + '...' : '';
+                    html += `<tr><td><b>${doc.id}</b></td><td style="font-size:0.8rem; color:var(--text-muted);">${preview}</td>
+                    <td><button class="btn btn-sm btn-edit" onclick="editMail('${doc.id}')">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteDoc('mail_configs','${doc.id}')">Del</button></td></tr>`;
                 });
                 document.getElementById('mail_list_body').innerHTML = html;
             });
+        }
+
+        async function editMail(id) {
+            const doc = await db.collection("mail_configs").doc(id).get();
+            document.getElementById('mail_sub').value = doc.data().name;
+            document.getElementById('mail_body').value = doc.data().template || "";
+            editingMailId = id;
+            document.getElementById('cancel_mail_btn').classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function cancelMailEdit() {
+            editingMailId = null; document.getElementById('mail_sub').value = ''; document.getElementById('mail_body').value = '';
+            document.getElementById('cancel_mail_btn').classList.add('hidden');
         }
 
         async function deleteDoc(c, i) { if(confirm("Are you sure?")) await db.collection(c).doc(i).delete(); }
