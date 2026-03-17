@@ -847,73 +847,42 @@ function buildDynamicField(f) {
         }
 
        function openQA() {
-            // 1. التحقق من البيانات الأساسية (نفس الكود القديم)
-            const name = document.getElementById('cust_name').value.trim();
-            const accNum = document.getElementById('acc_num').value.trim();
-            const phone = document.getElementById('caller_phone').value.trim();
-            if (!name || accNum.length === 0 || phone.length !== 11) {
-                alert("⚠️ Please fill Client Identification correctly.\n(Note: Phone must be 11 digits)");
-                return;
-            }
+    const name = document.getElementById('cust_name').value.trim();
+    const accNum = document.getElementById('acc_num').value.trim();
+    const phone = document.getElementById('caller_phone').value.trim();
+    if (!name || accNum.length === 0 || phone.length !== 11) {
+        alert("⚠️ Please fill Client Identification correctly.\n(Note: Phone must be 11 digits)");
+        return;
+    }
 
-            // 2. تحديد الأسئلة بناءً على نوع الطلب
-            const m = document.getElementById('qaModal');
-            const list = document.getElementById('qaList');
-            let q = [];
+    const m = document.getElementById('qaModal');
+    const list = document.getElementById('qaList');
+    let q = [];
 
-            // --- هنا تقدر تعدل أو تضيف أسئلة لأي طلب ---
-            if (currentMission === 'Online Limit') {
-                q = ["Confirmed usage responsibility?", "Confirmed amount & duration?", "Confirmed EGP/Local only?", "Confirm SLA? 2H"];
-            } else if (currentMission === 'Travel Note') {
-                q = ["Provided International Call Center # 19093?", "Explained travel limits?", "Confirmed travel documents?", "Confirm SLA? 2H"];
-            } else if (currentMission === 'Card Replacement') {
-                q = ["Confirmed old card blocking?", "Verified Delivery Branch?", "Explained fees & SLA", "Confirm SLA? 2:3 Working Days"];
-            } else if (currentMission === 'Suffix') {
-                q = ["Confirmed Suffix Type?", "Confirmed Primary Account?", "Confirm SLA? 90 mins"];
-            } else if (currentMission === 'Remove Rule') {
-                q = ["Verified Rule Number (1-5)?", "Confirmed usage responsibility?", "Confirmed transactions?", "Confirm SLA? 2H"];
-            } else if (currentMission === 'SMS Mod') {
-                q = ["Confirmed registered mobile number?", "Confirm SLA? after 80 mins/working day"];
-            } else if (currentMission === 'CC Referral') {
-                q = ["Verified transaction date/amount?", "Confirmed usage responsibility?", "Confirm SLA? 120 mins/working day"];
-            } else if (currentMission === 'Activation') {
-                q = [ "Confirm SLA? 2H"];
-            } else if (currentMission === 'Fraud') {
-                q = ["Reviewed all suspicious transactions?", "Confirm usage responsibility?", "Confirm SLA? 2H"];
-            } else if (currentMission === 'Complaint') {
-                q = ["Captured all details?", "Confirm SLA? 5 working days"];
-            } else if (currentMission === 'Disputes') {
-                q = ["Checked System Details?", "Confirm SLA?"];
-            }else if (document.getElementById('dispute_type').value === 'Dispute Request - ATM Operator') {
-                q = [
-                    "Verified International IBAN and Bank Name?",
-                    "Confirmed Exact Date and Time of transaction?",
-                    "Captured ATM ID and specific cash denominations?",
-                    "Advised customer of International Dispute TAT (Up to 45-60 days)?"
-                ];
-            } else if (currentMission === 'CC_Install') {
-                q = [
-                    "Confirmed installment amount, commission & interest?",
-                    "Confirmed 5% early settlement fee policy?",
-                    "confirm SLA 1 working day?"
-                ];
-            } else {
-                // قائمة عامة لأي طلب آخر
-                q = ["Confirm SLA 6 working days"];
-            }
+    // سحب الأسئلة من الداشبورد أوتوماتيك
+    if (document.getElementById('tab-requests').classList.contains('active') && customRequestsConfig[currentMission]) {
+        q = customRequestsConfig[currentMission].qa || [];
+    } 
+    else if (document.getElementById('tab-disputes').classList.contains('active') && customDisputesConfig[currentMission]) {
+        q = customDisputesConfig[currentMission].qa || [];
+    }
 
-            // بناء القائمة في الشاشة
-            list.innerHTML = q.map((text) => `
-                <label class="qa-item">
-                    <input type="checkbox" class="qa-chk" onchange="validateQA()">
-                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">${text}</span>
-                </label>
-            `).join('');
+    // لو الموظف نسي يكتب أسئلة في الداشبورد، بنحط سؤال افتراضي
+    if (q.length === 0) {
+        q = ["Verified Customer Identity & Checked System Details?", "Confirmed SLA?"];
+    }
 
-            m.classList.add('active');
-            validateQA();
-        }
+    // بناء القائمة في الشاشة
+    list.innerHTML = q.map((text) => `
+        <label class="qa-item">
+            <input type="checkbox" class="qa-chk" onchange="validateQA()">
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">${text}</span>
+        </label>
+    `).join('');
 
+    m.classList.add('active');
+    validateQA();
+}
         function closeQA() { document.getElementById('qaModal').classList.remove('active'); }
         function validateQA() { const all = Array.from(document.querySelectorAll('.qa-chk')).every(x => x.checked); document.getElementById('finalBtn').disabled = !all; }
 
@@ -1241,8 +1210,7 @@ function syncRequests() {
 
         querySnapshot.forEach((doc) => {
             const reqName = doc.id;
-            customRequestsConfig[reqName] = doc.data().fields; 
-
+            customRequestsConfig[reqName] = doc.data();
             const option = document.createElement("option");
             option.value = reqName;
             option.text = reqName;
@@ -1261,8 +1229,7 @@ function syncDisputes() {
 
         querySnapshot.forEach((doc) => {
             const dispName = doc.id;
-            customDisputesConfig[dispName] = doc.data().fields;
-
+            customDisputesConfig[dispName] = doc.data();
             const option = document.createElement("option");
             option.value = dispName;
             option.text = dispName;
