@@ -249,7 +249,7 @@
             const box = document.getElementById('dynamic_f_settings');
             box.innerHTML = '';
             
-            if (type === 'number') {
+            if (type === 'number') 
                 box.classList.remove('hidden');
                 box.innerHTML = `
                     <p style="color:var(--accent); font-weight:bold; margin-bottom:10px;">Number Constraints & Masking</p>
@@ -260,6 +260,7 @@
                         <div><label>Masking End (Index)</label><input type="number" id="mask_end" class="form-control" placeholder="e.g. 12" value="${existingData?.maskEnd || ''}"></div>
                     </div>
                 `;
+            }
             else if (type === 'select') {
                     box.classList.remove('hidden');
                     box.innerHTML = `
