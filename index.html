@@ -936,7 +936,8 @@ function handleDisputeChange() {
 
     // 1. ترتيب عنوان الإيميل (السبجكت) بالإنجليزي كما طلبت:
     // اسم الميل - رقم الحساب - رقم الموبايل المتصل - رقم التيكت
-    const subject = `${inquiry} Account No: ${acc} Caller ID: ${phone} Ticket: ${ticket}`;
+    // عنوان الإيميل بالفواصل المطلوبة
+const subject = `${inquiry} - Account No: ${acc} - Caller ID: ${phone} - Ticket: `;
     
     // 2. بناء نص الإيميل (البودي)
     let bodyText = `الساده الزملاء\n`;
