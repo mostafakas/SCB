@@ -847,53 +847,6 @@ function buildDynamicField(f) {
             return clean.substring(0, 6) + "******" + clean.substring(12);
         }
 
-        function getFormData() {
-            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
-            
-            // الترتيب الجديد في الجدول المنسوخ
-            let d = { 
-                "Ticket": getVal('ticket_num') || "N/A",
-                "Client Name": getVal('cust_name'), 
-                "Account No": getVal('acc_num'), 
-                "Segment": getVal('cust_type'),
-                "Caller Mobile": getVal('caller_phone'), 
-                "Date": getVal('req_date'),
-                "Reg. Mobile": getVal('cust_phone'),
-                "Branch": getVal('home_branch') || getVal('disp_branch') || "N/A"
-            };
-
-            if(currentMission === 'Online Limit') { d["Request"] = "Online Limit"; d["Card No"] = maskCard(getVal('card_num')); d["Card Type"] = getVal('card_cat'); d["Limit"] = getVal('req_limit') + " EGP"; d["Activation"] = getVal('activation_date'); d["Expiry"] = document.querySelector('input[name="expiry_mode"]:checked').value === 'open' ? "Open" : getVal('expiry_date'); }
-            else if(currentMission === 'Travel Note') { d["Request"] = "Travel Note"; d["Card No"] = maskCard(getVal('card_num')); d["Card Type"] = getVal('card_cat'); d["Country"] = getVal('country_in'); d["From"] = getVal('d_date'); d["To"] = getVal('r_date'); }
-            else if(currentMission === 'Card Replacement') { d["Request"] = "Card Replacement"; d["Card No"] = maskCard(getVal('card_num')); d["Card Type"] = getVal('card_cat'); d["Reason"] = getVal('replace_reason'); d["Pickup"] = getVal('pickup_branch'); }
-            else if(currentMission === 'Reset PIN') { d["Request"] = "Reset PIN"; d["Card No"] = maskCard(getVal('card_num')); d["Card Type"] = getVal('card_cat'); }
-            else if(currentMission === 'Suffix') { d["Card No"] = maskCard(getVal('card_num')); d["Suffix #"] = getVal('suffix_num'); d["Suffix Type"] = getVal('suffix_type'); d["Primary Acc"] = getVal('p_acc_type'); }
-            else if(currentMission === 'Remove Rule') { d["Card No"] = maskCard(getVal('card_num')); d["Rule"] = getVal('rule_type'); d["Duration"] = getVal('rule_duration'); }
-            else if(currentMission === 'SMS Mod') { d["Card No"] = maskCard(getVal('card_num')); d["Branch"] = getVal('home_branch'); }
-            else if(currentMission === 'CC Referral') { d["Card No"] = maskCard(getVal('card_num')); d["Trx Desc"] = getVal('trx_desc'); }
-            else if(currentMission === 'Activation') { d["User"] = getVal('web_user'); d["User Type"] = getVal('user_type'); }
-            else if(currentMission === 'Fraud') { d["Card No"] = maskCard(getVal('card_num')); d["Fraud Details"] = getVal('fraud_details'); }
-            else if(currentMission === 'Mails') { d["Request"] = getVal('inquiry_type'); d["National ID"] = getVal('nat_id'); d["Details"] = getVal('inquiry_desc'); }
-            else if(currentMission === 'Complaint') { d["Request"] = "Complaint"; d["National ID"] = getVal('nat_id'); d["Entity"] = getVal('comp_entity'); d["Visit Date"] = getVal('visit_date'); d["Complaint"] = getVal('comp_details'); d["Action Required"] = getVal('comp_action'); }
-            else if(currentMission === 'CC_Install') { 
-                d["Card No"] = maskCard(getVal('card_num')); 
-                d["Trx Type"] = getVal('inst_trx_type'); 
-                d["Tenor"] = getVal('inst_tenor') + " Months"; 
-                d["Trx Date"] = getVal('inst_trx_date'); 
-                d["Amount"] = getVal('inst_trx_amt'); 
-                d["Ref #"] = getVal('inst_ref_num'); 
-            }
-            else if(currentMission === 'Disputes') {
-                d["Request"] = getVal('dispute_type');
-                const activeFields = document.querySelectorAll('#dispute_dynamic_fields .disp-fld:not(.hidden)');
-                activeFields.forEach(field => {
-                    const label = field.querySelector('label').innerText.replace('*','').trim();
-                    const input = field.querySelector('input, textarea');
-                    if(input) { d[label] = input.id === 'disp_card_num' ? maskCard(input.value) : input.value; }
-                });
-            }
-            return d;
-        }
-
        function openQA() {
             // 1. التحقق من البيانات الأساسية (نفس الكود القديم)
             const name = document.getElementById('cust_name').value.trim();
@@ -1007,21 +960,7 @@ function buildDynamicField(f) {
 }
 
         // --- OUTLOOK MAILER ---
-        function handleRequestsOutlook(phone, acc) {
-            const ticket = document.getElementById('ticket_num').value || 'N/A';
-            const name = document.getElementById('cust_name').value || "N/A";
-            const date = document.getElementById('req_date').value || "N/A";
-            const segment = document.getElementById('cust_type').value || "N/A";
-            const regPhone = document.getElementById('cust_phone').value || "N/A";
-            const branch = document.getElementById('home_branch').value || "N/A";
-
-            const subject = `Ticket: ${ticket} | ${currentMission} | Acc: ${acc} | Phone: ${phone}`;
-            const bodyText = `Dears,\n     kindly need your support for the below request.\n\n` +
-                             `تيكت: ${ticket}\nاسم العميل: ${name}\nرقم الحساب: ${acc}\nالسيجمنت: ${segment}\nرقم الهاتف المتصل: ${phone}\nتاريخ الطلب: ${date}\nرقم الموبيل المسجل: ${regPhone}\nالفرع: ${branch}\n\n`;
-            return { subject, bodyText };
-        }
-
-        function handleMailsOutlook(phone, acc, date) {
+                function handleMailsOutlook(phone, acc, date) {
             const ticket = document.getElementById('ticket_num').value || 'N/A';
             const name = document.getElementById('cust_name').value || "N/A";
             const natId = document.getElementById('nat_id').value || "N/A";
@@ -1058,15 +997,93 @@ function buildDynamicField(f) {
                              `الرقم القومي: ${natId}\nجهة تقديم الشكوى: ${entity}\nرقم تيكت الزيارة: ${vTicket}\nتاريخ الزيارة: ${vDate}\n\nتفاصيل الشكوى:\n${details}\n\nالمطلوب:\n${action}\n\n`;
             return { subject, bodyText };
         }
+        // ==========================================
+// دالة تجميع البيانات للنسخ (النسخة الذكية)
+// ==========================================
+function getFormData() {
+    const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+    
+    // 1. البيانات الأساسية للعميل (دي ثابتة في كل الطلبات)
+    let d = { 
+        "Ticket": getVal('ticket_num') || "N/A",
+        "Client Name": getVal('cust_name'), 
+        "Account No": getVal('acc_num'), 
+        "Segment": getVal('cust_type'),
+        "Caller Mobile": getVal('caller_phone'), 
+        "Date": getVal('req_date'),
+        "Reg. Mobile": getVal('cust_phone'),
+        "Branch": getVal('home_branch') || getVal('disp_branch') || "N/A",
+        "Request Type": currentMission // اسم الطلب أو الاعتراض
+    };
 
-        function handleDisputesOutlook(phone, acc) {
-            const ticket = document.getElementById('ticket_num').value || 'N/A';
-            const reqName = document.getElementById('dispute_type').value || "Dispute Request";
-            const subject = `Ticket: ${ticket} | ${reqName} | Acc: ${acc} | Phone: ${phone}`;
-            let bodyText = "Dears,\n     kindly need your assist for the below request.\n\n\n";
-            return { subject, bodyText };
+    // 2. معالجة الإيميلات والشكاوى (عشان دول لسه ليهم قسم ثابت)
+    if(currentMission === 'Mails') { 
+        d["Request"] = getVal('inquiry_type'); d["National ID"] = getVal('nat_id'); d["Details"] = getVal('inquiry_desc'); 
+        return d;
+    }
+    if(currentMission === 'Complaint') { 
+        d["Request"] = "Complaint"; d["National ID"] = getVal('nat_id'); d["Entity"] = getVal('comp_entity'); d["Visit Date"] = getVal('visit_date'); d["Complaint"] = getVal('comp_details'); d["Action Required"] = getVal('comp_action'); 
+        return d;
+    }
+
+    // 3. الجزء الذكي: سحب بيانات أي حقول ديناميكية تم إنشاؤها من الداشبورد
+    document.querySelectorAll('.dyn-input').forEach(input => {
+        const label = input.getAttribute('data-label');
+        let val = input.value || "N/A";
+        
+        // لو الحقل فيه كلمة Card بنعمله Masking (تشفير لجزء من الرقم)
+        if(label.toLowerCase().includes('card') && val !== "N/A") {
+            val = maskCard(val);
         }
+        
+        d[label] = val;
+    });
 
+    return d;
+}
+
+// ==========================================
+// دوال إرسال الأوتلوك (النسخة الذكية)
+// ==========================================
+function handleRequestsOutlook(phone, acc) {
+    const ticket = document.getElementById('ticket_num').value || 'N/A';
+    const name = document.getElementById('cust_name').value || "N/A";
+    const date = document.getElementById('req_date').value || "N/A";
+    const segment = document.getElementById('cust_type').value || "N/A";
+    const regPhone = document.getElementById('cust_phone').value || "N/A";
+    const branch = document.getElementById('home_branch').value || "N/A";
+
+    const subject = `Ticket: ${ticket} | ${currentMission} | Acc: ${acc} | Phone: ${phone}`;
+    let bodyText = `Dears,\n     kindly need your support for the below request.\n\n` +
+                     `تيكت: ${ticket}\nاسم العميل: ${name}\nرقم الحساب: ${acc}\nالسيجمنت: ${segment}\nرقم الهاتف المتصل: ${phone}\nتاريخ الطلب: ${date}\nرقم الموبيل المسجل: ${regPhone}\nالفرع: ${branch}\n\n` + 
+                     `--- تفاصيل الطلب ---\n`;
+    
+    // سحب الحقول الديناميكية للأوتلوك
+    document.querySelectorAll('.dyn-input').forEach(input => {
+        const label = input.getAttribute('data-label');
+        const val = input.value || "N/A";
+        bodyText += `${label}: ${val}\n`;
+    });
+
+    return { subject, bodyText };
+}
+
+function handleDisputesOutlook(phone, acc) {
+    const ticket = document.getElementById('ticket_num').value || 'N/A';
+    const reqName = document.getElementById('dispute_type').value || "Dispute Request";
+    const subject = `Ticket: ${ticket} | ${reqName} | Acc: ${acc} | Phone: ${phone}`;
+    let bodyText = "Dears,\n     kindly need your assist for the below request.\n\n\n" + 
+                   `--- تفاصيل الاعتراض ---\n`;
+    
+    // سحب الحقول الديناميكية للأوتلوك
+    document.querySelectorAll('.dyn-input').forEach(input => {
+        const label = input.getAttribute('data-label');
+        const val = input.value || "N/A";
+        bodyText += `${label}: ${val}\n`;
+    });
+
+    return { subject, bodyText };
+}
         function sendOutlook() {
             const phone = document.getElementById('caller_phone').value || "N/A";
             const acc = document.getElementById('acc_num').value || "N/A";
