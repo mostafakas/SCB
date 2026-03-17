@@ -1269,14 +1269,14 @@ function openAdminDashboard() {
     }
 }
 // ==========================================
-// دوال الربط مع الداشبورد (سحب البيانات أوتوماتيك)
+// الماكينة المركزية للمزامنة مع الداشبورد
 // ==========================================
 
-// متغيرات عشان نحفظ فيها الإعدادات اللي جاية من الداشبورد
-let customRequestsConfig = {};
-let customDisputesConfig = {};
+let customRequestsConfig = {}; // مخزن الطلبات
+let customDisputesConfig = {}; // مخزن الاعتراضات
+let mailTemplates = {};        // مخزن ديباجات الإيميلات
 
-// 1. دالة جلب الطلبات (Requests)
+// 1. مزامنة الطلبات (Requests)
 function syncRequests() {
     const reqDropdown = document.getElementById('main_request_type');
     if (!reqDropdown) return;
@@ -1300,9 +1300,11 @@ function syncRequests() {
     });
 }
 
-// 2. دالة جلب الاعتراضات (Disputes)
+// 2. مزامنة الاعتراضات (Disputes)
 function syncDisputes() {
     const dispDropdown = document.getElementById('dispute_type');
+    if (!dispDropdown) return;
+
     db.collection("dispute_types").onSnapshot((querySnapshot) => {
         dispDropdown.innerHTML = '<option value="">Select Dispute Type...</option>';
         customDisputesConfig = {};
@@ -1310,36 +1312,44 @@ function syncDisputes() {
         querySnapshot.forEach((doc) => {
             const dispName = doc.id;
             customDisputesConfig[dispName] = doc.data();
+
             const option = document.createElement("option");
             option.value = dispName;
             option.text = dispName;
             dispDropdown.appendChild(option);
         });
-        console.log("Disputes synced from Firebase!");
+        console.log("✅ Disputes Synced Successfully");
     });
 }
 
-// 3. دالة جلب الإيميلات (Mails)
-let mailTemplates = {}; // متغير عالمي لتخزين الديباجات
-
+// 3. مزامنة الإيميلات (Mails)
 function syncMailSubjects() {
     const mailDropdown = document.getElementById('inquiry_type');
+    if (!mailDropdown) return;
+
     db.collection("mail_configs").onSnapshot((querySnapshot) => {
         mailDropdown.innerHTML = '<option value="">Select Subject...</option>'; 
-        mailTemplates = {}; // إعادة تهيئة
+        mailTemplates = {}; 
         
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            mailTemplates[data.name] = data.template || ""; // تخزين الديباجة
+            mailTemplates[data.name] = data.template || ""; 
             
             const option = document.createElement("option");
             option.value = data.name;
             option.text = data.name;
             mailDropdown.appendChild(option);
         });
-        console.log("Mail templates synced!");
+        console.log("✅ Mail Templates Synced");
     });
 }
+
+// تشغيل المزامنة الشاملة عند فتح السيستم
+window.addEventListener('load', () => {
+    syncRequests();
+    syncDisputes();
+    syncMailSubjects();
+});
     </script>
 </body>
 </html>
