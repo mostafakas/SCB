@@ -781,7 +781,7 @@ function handleMainRequestChange() {
     if (!type || !customRequestsConfig[type]) return;
 
     // بنلف على الحقول اللي جاية من الداشبورد ونرسمها
-    const fields = customRequestsConfig[type];
+    const fields = customRequestsConfig[type].fields;
     fields.forEach(f => {
         container.appendChild(buildDynamicField(f));
     });
@@ -799,7 +799,7 @@ function handleDisputeChange() {
 
     if (!type || !customDisputesConfig[type]) return;
 
-    const fields = customDisputesConfig[type];
+    const fields = customDisputesConfig[type].fields;
     fields.forEach(f => {
         container.appendChild(buildDynamicField(f));
     });
