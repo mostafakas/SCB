@@ -1243,14 +1243,59 @@ function openAdminDashboard() {
         alert("⛔ Access Denied! Incorrect Password.");
     }
 }
-        // دالة لجلب مواضيع الإيميلات من فايربيز وتحديث القائمة فوراً
+// ==========================================
+// دوال الربط مع الداشبورد (سحب البيانات أوتوماتيك)
+// ==========================================
+
+// متغيرات عشان نحفظ فيها الإعدادات اللي جاية من الداشبورد
+let customRequestsConfig = {};
+let customDisputesConfig = {};
+
+// 1. دالة جلب الطلبات (Requests)
+function syncRequests() {
+    const reqDropdown = document.getElementById('main_request_type');
+    db.collection("request_types").onSnapshot((querySnapshot) => {
+        reqDropdown.innerHTML = '<option value="">Select Request Type...</option>';
+        customRequestsConfig = {}; 
+
+        querySnapshot.forEach((doc) => {
+            const reqName = doc.id;
+            customRequestsConfig[reqName] = doc.data().fields; 
+
+            const option = document.createElement("option");
+            option.value = reqName;
+            option.text = reqName;
+            reqDropdown.appendChild(option);
+        });
+        console.log("Requests synced from Firebase!");
+    });
+}
+
+// 2. دالة جلب الاعتراضات (Disputes)
+function syncDisputes() {
+    const dispDropdown = document.getElementById('dispute_type');
+    db.collection("dispute_types").onSnapshot((querySnapshot) => {
+        dispDropdown.innerHTML = '<option value="">Select Dispute Type...</option>';
+        customDisputesConfig = {};
+
+        querySnapshot.forEach((doc) => {
+            const dispName = doc.id;
+            customDisputesConfig[dispName] = doc.data().fields;
+
+            const option = document.createElement("option");
+            option.value = dispName;
+            option.text = dispName;
+            dispDropdown.appendChild(option);
+        });
+        console.log("Disputes synced from Firebase!");
+    });
+}
+
+// 3. دالة جلب الإيميلات (Mails)
 function syncMailSubjects() {
     const mailDropdown = document.getElementById('inquiry_type');
-    
     db.collection("mail_configs").onSnapshot((querySnapshot) => {
-        // تفريغ القائمة الحالية (اختياري لو عايز تمسح القديم)
         mailDropdown.innerHTML = ""; 
-        
         querySnapshot.forEach((doc) => {
             const subject = doc.data().name;
             const option = document.createElement("option");
@@ -1262,8 +1307,12 @@ function syncMailSubjects() {
     });
 }
 
-// تشغيل المزامنة أول ما الصفحة تفتح
-window.addEventListener('load', syncMailSubjects);    
+// تشغيل كل دوال المزامنة أول ما الصفحة تفتح
+window.addEventListener('load', () => {
+    syncMailSubjects();
+    syncRequests();
+    syncDisputes();
+});
     </script>
 </body>
 </html>
