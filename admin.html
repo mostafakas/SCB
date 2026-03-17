@@ -74,9 +74,19 @@
                 <h3 class="section-title">📝 Request Builder</h3>
                 <label>Request Name</label>
                 <input type="text" id="req_name" class="form-control" placeholder="e.g. Card Replacement">
-                <label>Select Fields (Tabs) to Include:</label>
+                
+                <label>1. Select Fields to Include:</label>
                 <div class="fields-grid" id="req_picker"></div>
-                <button class="btn btn-accent" style="width:100%; margin-top:1rem;" onclick="saveSchema('requests')">Save Request Schema</button>
+
+                <div style="margin-top: 1.5rem; background: rgba(0,0,0,0.3); padding: 1.2rem; border-radius: 10px; border: 1px dashed var(--accent);">
+                    <p style="font-size: 0.9rem; color: var(--accent); margin-bottom: 0.8rem; font-weight: bold;">2. Arrange Fields Order (Drag or use arrows):</p>
+                    <div id="req_order_list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <p style="color: var(--text-muted); font-size: 0.8rem;">No fields selected yet...</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-accent" style="width:100%; margin-top:1.5rem; height: 50px; font-size: 1.1rem;" onclick="saveSchema('requests')">Save Request Schema</button>
+                
                 <table>
                     <thead><tr><th>Request Name</th><th>Included Fields</th><th>Action</th></tr></thead>
                     <tbody id="req_list"></tbody>
@@ -84,14 +94,24 @@
             </div>
         </div>
 
-        <div id="tab_disputes" class="tab-content hidden">
+<div id="tab_disputes" class="tab-content hidden">
             <div class="config-card">
                 <h3 class="section-title">⚖️ Dispute Builder</h3>
                 <label>Dispute Name</label>
                 <input type="text" id="disp_name" class="form-control">
-                <label>Select Fields (Tabs) to Include:</label>
+                
+                <label>1. Select Fields to Include:</label>
                 <div class="fields-grid" id="disp_picker"></div>
-                <button class="btn btn-accent" style="width:100%; margin-top:1rem;" onclick="saveSchema('disputes')">Save Dispute Schema</button>
+
+                <div style="margin-top: 1.5rem; background: rgba(0,0,0,0.3); padding: 1.2rem; border-radius: 10px; border: 1px dashed var(--accent);">
+                    <p style="font-size: 0.9rem; color: var(--accent); margin-bottom: 0.8rem; font-weight: bold;">2. Arrange Fields Order:</p>
+                    <div id="disp_order_list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <p style="color: var(--text-muted); font-size: 0.8rem;">No fields selected yet...</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-accent" style="width:100%; margin-top:1.5rem; height: 50px; font-size: 1.1rem;" onclick="saveSchema('disputes')">Save Dispute Schema</button>
+                
                 <table>
                     <thead><tr><th>Dispute Name</th><th>Included Fields</th><th>Action</th></tr></thead>
                     <tbody id="disp_list"></tbody>
@@ -166,28 +186,6 @@
             document.getElementById('f_opts').value = '';
             editingFieldId = null; // نرجع لوضع الإضافة
         }
-
-        function loadFields() {
-            db.collection("fields_pool").onSnapshot(snap => {
-                allFields = [];
-                let html = "";
-                let pickerHtml = "";
-                snap.forEach(doc => {
-                    const d = doc.data(); d.id = doc.id;
-                    allFields.push(d);
-                    html += `<tr><td>${d.label}</td><td>${d.type}</td>
-                        <td>
-                            <button class="btn-edit" onclick="editField('${d.id}')">Edit</button>
-                            <button class="btn-danger" onclick="deleteDoc('fields_pool','${d.id}')">Del</button>
-                        </td></tr>`;
-                    pickerHtml += `<label class="field-pill"><input type="checkbox" value="${d.id}" class="field-chk"> ${d.label}</label>`;
-                });
-                document.getElementById('all_fields_list').innerHTML = html;
-                document.getElementById('req_picker').innerHTML = pickerHtml;
-                document.getElementById('disp_picker').innerHTML = pickerHtml;
-            });
-        }
-
         function editField(id) {
             const f = allFields.find(x => x.id === id);
             document.getElementById('f_name').value = f.label;
@@ -201,35 +199,7 @@
         // ==========================================
         // 2. Request & Dispute Builder
         // ==========================================
-        async function saveSchema(mode) {
-            const isReq = mode === 'requests';
-            const prefix = isReq ? 'req' : 'disp';
-            const colName = isReq ? 'request_types' : 'dispute_types';
-            
-            const name = document.getElementById(prefix+'_name').value.trim();
-            const chks = document.querySelectorAll('#'+prefix+'_picker .field-chk:checked');
-            
-            if(!name || chks.length === 0) return alert("Fill Name and Select Fields");
-
-            const selectedFields = Array.from(chks).map(c => allFields.find(f => f.id === c.value));
-            
-            let currentEditId = isReq ? editingReqId : editingDispId;
-
-            // لو بيعدل وغير الاسم، نمسح الدوكيومنت القديم عشان ميعملش نسخة تانية
-            if (currentEditId && currentEditId !== name) {
-                await db.collection(colName).doc(currentEditId).delete();
-            }
-
-            await db.collection(colName).doc(name).set({ fields: selectedFields });
-            alert("Schema Saved!");
-            
-            // تصفير الخانات
-            document.getElementById(prefix+'_name').value = '';
-            document.querySelectorAll('.field-chk').forEach(c => c.checked = false);
-            
-            // نرجع لوضع الإضافة
-            if(isReq) editingReqId = null; else editingDispId = null;
-        }
+    
 
         function loadSchemas(mode) {
             const col = mode === 'requests' ? "request_types" : "dispute_types";
@@ -246,31 +216,122 @@
                 document.getElementById(mode === 'requests' ? 'req_list' : 'disp_list').innerHTML = html;
             });
         }
+        let selectedReqFields = [];
+let selectedDispFields = [];
 
-        async function editSchema(mode, id) {
-            const col = mode === 'requests' ? "request_types" : "dispute_types";
-            const prefix = mode === 'requests' ? 'req' : 'disp';
+// تحديث عرض الحقول مع إضافة خاصية "الترتيب"
+function loadFields() {
+    db.collection("fields_pool").onSnapshot(snap => {
+        allFields = [];
+        let html = "";
+        let reqPickerHtml = "";
+        let dispPickerHtml = "";
+        
+        snap.forEach(doc => {
+            const d = doc.data(); d.id = doc.id;
+            allFields.push(d);
+            html += `<tr><td>${d.label}</td><td>${d.type}</td>
+                <td>
+                    <button class="btn-edit" onclick="editField('${d.id}')">Edit</button>
+                    <button class="btn-danger" onclick="deleteDoc('fields_pool','${d.id}')">Del</button>
+                </td></tr>`;
             
-            const doc = await db.collection(col).doc(id).get();
-            const data = doc.data();
-            
-            document.getElementById(prefix+'_name').value = doc.id;
-            
-            // شيل كل العلامات الأول
-            document.querySelectorAll('#'+prefix+'_picker .field-chk').forEach(c => c.checked = false);
-            
-            // حط علامة على التابات المحفوظة
-            data.fields.forEach(f => {
-                const cb = Array.from(document.querySelectorAll('#'+prefix+'_picker .field-chk')).find(c => c.value === f.id);
-                if(cb) cb.checked = true;
-            });
+            // مربعات الاختيار بقت تنادي على دالة الترتيب لما تتغير
+            reqPickerHtml += `<label class="field-pill"><input type="checkbox" value="${d.id}" class="field-chk-req" onchange="updateOrder('requests', '${d.id}', this.checked)"> ${d.label}</label>`;
+            dispPickerHtml += `<label class="field-pill"><input type="checkbox" value="${d.id}" class="field-chk-disp" onchange="updateOrder('disputes', '${d.id}', this.checked)"> ${d.label}</label>`;
+        });
+        
+        document.getElementById('all_fields_list').innerHTML = html;
+        document.getElementById('req_picker').innerHTML = reqPickerHtml;
+        document.getElementById('disp_picker').innerHTML = dispPickerHtml;
+    });
+}
 
-            // نعلم إننا في وضع التعديل
-            if(mode === 'requests') editingReqId = id; else editingDispId = id;
-            
-            window.scrollTo(0,0);
-        }
+// دالة إدارة ترتيب الحقول المختارة
+function updateOrder(mode, fieldId, isChecked) {
+    let list = mode === 'requests' ? selectedReqFields : selectedDispFields;
+    if (isChecked) {
+        const field = allFields.find(f => f.id === fieldId);
+        list.push(field);
+    } else {
+        const index = list.findIndex(f => f.id === fieldId);
+        if (index > -1) list.splice(index, 1);
+    }
+    renderOrderList(mode);
+}
 
+// رسم قائمة الترتيب بالأزرار (فوق وتحت)
+function renderOrderList(mode) {
+    const list = mode === 'requests' ? selectedReqFields : selectedDispFields;
+    const container = document.getElementById(mode === 'requests' ? 'req_order_list' : 'disp_order_list');
+    
+    container.innerHTML = list.map((f, i) => `
+        <div class="field-pill" style="justify-content: space-between;">
+            <span>${f.label}</span>
+            <div>
+                <button class="btn-edit" onclick="moveItem('${mode}', ${i}, -1)">↑</button>
+                <button class="btn-edit" onclick="moveItem('${mode}', ${i}, 1)">↓</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function moveItem(mode, index, direction) {
+    let list = mode === 'requests' ? selectedReqFields : selectedDispFields;
+    const newIndex = index + direction;
+    if (newIndex >= 0 && newIndex < list.length) {
+        [list[index], list[newIndex]] = [list[newIndex], list[index]];
+        renderOrderList(mode);
+    }
+}
+
+// تعديل دالة الحفظ عشان تاخد القائمة المرتبة
+async function saveSchema(mode) {
+    const isReq = mode === 'requests';
+    const prefix = isReq ? 'req' : 'disp';
+    const colName = isReq ? 'request_types' : 'dispute_types';
+    const name = document.getElementById(prefix+'_name').value.trim();
+    const orderedList = isReq ? selectedReqFields : selectedDispFields;
+
+    if(!name || orderedList.length === 0) return alert("Fill Name and Select Fields");
+
+    let currentEditId = isReq ? editingReqId : editingDispId;
+    if (currentEditId && currentEditId !== name) {
+        await db.collection(colName).doc(currentEditId).delete();
+    }
+
+    await db.collection(colName).doc(name).set({ fields: orderedList });
+    alert("Schema Saved with your Order!");
+    
+    // Reset
+    document.getElementById(prefix+'_name').value = '';
+    if(isReq) { selectedReqFields = []; editingReqId = null; } else { selectedDispFields = []; editingDispId = null; }
+    document.querySelectorAll('.field-chk-'+prefix).forEach(c => c.checked = false);
+    renderOrderList(mode);
+}
+
+// تعديل دالة التعديل عشان ترتب الحقول لما تفتح طلب قديم
+async function editSchema(mode, id) {
+    const col = mode === 'requests' ? "request_types" : "dispute_types";
+    const prefix = mode === 'requests' ? 'req' : 'disp';
+    const doc = await db.collection(col).doc(id).get();
+    const data = doc.data();
+    
+    document.getElementById(prefix+'_name').value = doc.id;
+    document.querySelectorAll('.field-chk-'+prefix).forEach(c => c.checked = false);
+    
+    // تحميل القائمة المرتبة من الداتابيز
+    if(mode === 'requests') selectedReqFields = data.fields; else selectedDispFields = data.fields;
+    
+    data.fields.forEach(f => {
+        const cb = Array.from(document.querySelectorAll('.field-chk-'+prefix)).find(c => c.value === f.id);
+        if(cb) cb.checked = true;
+    });
+
+    if(mode === 'requests') editingReqId = id; else editingDispId = id;
+    renderOrderList(mode);
+    window.scrollTo(0,0);
+}
         // ==========================================
         // 3. Mail Subjects
         // ==========================================
