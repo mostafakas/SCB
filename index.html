@@ -944,7 +944,6 @@ const subject = `${inquiry} - Account No: ${acc} - Caller ID: ${phone} - Ticket:
     bodyText += `تحية .. طيبة .. وبعد\n`;
     bodyText += `برجاء الاطلاع علي الاستفسار الوارد لنا بتاريخ (${today})\n\n`;
     
-    bodyText += `--- البيانات الأساسية ---\n`;
     bodyText += `اسم العميل: ${name}\n`;
     bodyText += `رقم الحساب: ${acc}\n`;
     bodyText += `شريحة العميل: ${segment}\n`;
@@ -989,8 +988,21 @@ function buildDynamicField(f) {
     
     let inputHtml = '';
     
-    // أ. إذا كان الحقل قائمة منسدلة (Dropdown)
-    if (f.type === 'select') {
+    // --- 1. استثناء خاص للشكاوى (Textarea مع خاصية الـ Auto-Resize) ---
+    if (f.label === 'Complaint Details' || f.label === 'Action Required') {
+        // جعل الحقل يأخذ عرض السطر بالكامل
+        div.style.gridColumn = "1 / -1"; 
+        inputHtml = `
+            <textarea id="dyn_${f.id}" 
+                      class="input-pro dyn-input" 
+                      data-label="${f.label}" 
+                      placeholder="Enter ${f.label} here..." 
+                      oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" 
+                      style="height: 100px; min-height: 100px; padding: 10px; resize: none; overflow: hidden; line-height: 1.5; transition: height 0.1s ease;"></textarea>
+        `;
+    } 
+    // --- 2. إذا كان الحقل قائمة منسدلة (Dropdown) ---
+    else if (f.type === 'select') {
         const opts = f.options ? f.options.map(o => `<option value="${o.label}" data-hint="${o.hint || ''}">${o.label}</option>`).join('') : '';
         inputHtml = `
             <select id="dyn_${f.id}" class="input-pro dyn-input" data-label="${f.label}" onchange="showHint(this)">
@@ -999,8 +1011,8 @@ function buildDynamicField(f) {
             </select>
             <span class="hint-text" style="display:block; font-size:0.65rem; color:var(--warning); margin-top:2px; min-height:10px; font-weight:bold;"></span>
         `;
-    } 
-    // ب. إذا كان الحقل رقماً (Number) مع تطبيق القيود
+    }  
+    // --- 3. إذا كان الحقل رقماً (Number) مع تطبيق القيود ---
     else if (f.type === 'number') {
         const minAttr = f.min ? `min="${f.min}"` : '';
         const maxAttr = f.max ? `max="${f.max}"` : '';
@@ -1012,8 +1024,8 @@ function buildDynamicField(f) {
                    placeholder="${f.label}">
             <span class="limit-error" style="display:block; font-size:0.65rem; color:var(--danger); margin-top:2px; min-height:10px; font-weight:bold;"></span>
         `;
-    }
-    // ج. باقي أنواع الحقول
+    } 
+    // --- 4. باقي أنواع الحقول (Text, Date, etc.) ---
     else {
         inputHtml = `<input type="${f.type}" id="dyn_${f.id}" class="input-pro dyn-input font-mono" data-label="${f.label}" placeholder="${f.label}">`;
     }
@@ -1021,7 +1033,6 @@ function buildDynamicField(f) {
     div.innerHTML = `<label class="label-pro">${f.label}</label>${inputHtml}`;
     return div;
 }
-
 // 2. دالة إظهار الملاحظة/المصاريف (Hint) تحت القائمة
 function showHint(selectEl) {
     const selectedOption = selectEl.options[selectEl.selectedIndex];
