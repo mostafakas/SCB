@@ -988,17 +988,31 @@ function buildDynamicField(f) {
     
     let inputHtml = '';
     
-    // --- 1. استثناء خاص للشكاوى (Textarea مع خاصية الـ Auto-Resize) ---
+    // --- 1. استثناء خاص للشكاوى (Textarea يتمدد تلقائياً) ---
     if (f.label === 'Complaint Details' || f.label === 'Action Required') {
-        // جعل الحقل يأخذ عرض السطر بالكامل
-        div.style.gridColumn = "1 / -1"; 
+        div.style.gridColumn = "1 / -1"; // يأخذ عرض السطر كله
         inputHtml = `
             <textarea id="dyn_${f.id}" 
-                      class="input-pro dyn-input" 
+                      class="dyn-input" 
                       data-label="${f.label}" 
                       placeholder="Enter ${f.label} here..." 
-                      oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" 
-                      style="height: 100px; min-height: 100px; padding: 10px; resize: none; overflow: hidden; line-height: 1.5; transition: height 0.1s ease;"></textarea>
+                      oninput="autoExpand(this)" 
+                      style="width: 100%; 
+                             min-height: 100px; 
+                             height: 100px; 
+                             padding: 12px; 
+                             border-radius: 8px; 
+                             border: 1px solid var(--border-color); 
+                             background-color: var(--input-bg); 
+                             color: var(--text-main); 
+                             font-family: inherit; 
+                             font-size: 0.85rem; 
+                             line-height: 1.6; 
+                             resize: none; 
+                             overflow: hidden; 
+                             display: block; 
+                             box-sizing: border-box; 
+                             transition: border-color 0.2s;"></textarea>
         `;
     } 
     // --- 2. إذا كان الحقل قائمة منسدلة (Dropdown) ---
@@ -1025,7 +1039,7 @@ function buildDynamicField(f) {
             <span class="limit-error" style="display:block; font-size:0.65rem; color:var(--danger); margin-top:2px; min-height:10px; font-weight:bold;"></span>
         `;
     } 
-    // --- 4. باقي أنواع الحقول (Text, Date, etc.) ---
+    // --- 4. باقي أنواع الحقول العادية ---
     else {
         inputHtml = `<input type="${f.type}" id="dyn_${f.id}" class="input-pro dyn-input font-mono" data-label="${f.label}" placeholder="${f.label}">`;
     }
@@ -1033,7 +1047,12 @@ function buildDynamicField(f) {
     div.innerHTML = `<label class="label-pro">${f.label}</label>${inputHtml}`;
     return div;
 }
-// 2. دالة إظهار الملاحظة/المصاريف (Hint) تحت القائمة
+
+// ضف الدالة دي برضه تحتها عشان تضمن التمدد المستمر
+function autoExpand(el) {
+    el.style.height = 'auto'; // بنصفر الطول عشان يقيس المحتوى الجديد صح
+    el.style.height = el.scrollHeight + 'px'; // بياخد طول المحتوى الفعلي
+}// 2. دالة إظهار الملاحظة/المصاريف (Hint) تحت القائمة
 function showHint(selectEl) {
     const selectedOption = selectEl.options[selectEl.selectedIndex];
     const hintText = selectedOption.getAttribute('data-hint');
