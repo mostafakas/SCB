@@ -922,35 +922,40 @@ function handleDisputeChange() {
 }
 
         // --- OUTLOOK MAILER ---
-               function handleMailsOutlook(phone, acc, date) {
+             function handleMailsOutlook(phone, acc, date) {
     const inquiry = document.getElementById('inquiry_type').value;
-    const customTemplate = mailTemplates[inquiry] || ""; // الديباجة من الداشبورد
+    const customTemplate = mailTemplates[inquiry] || ""; 
     
     const ticket = document.getElementById('ticket_num').value || 'لا يوجد';
     const name = document.getElementById('cust_name').value || "لا يوجد";
     const segment = document.getElementById('cust_type').value || "لا يوجد";
-    const branch = document.getElementById('home_branch').value || "لا يوجد";
     const regPhone = document.getElementById('cust_phone').value || "لا يوجد";
-
-    // تاريخ اليوم
-    const todayDate = new Date().toLocaleDateString('ar-EG');
-
-    // عنوان الإيميل
-    const subject = `Ticket: ${ticket} | ${inquiry} | Acc: ${acc}`;
+    const branch = document.getElementById('home_branch').value || "لا يوجد";
     
-    // محتوى الإيميل كما طلبت بالضبط
-    let bodyText = `الساده الزملاء\nتحية .. طيبة .. وبعد\nبرجاء الاطلاع علي الاستفسار الوارد لنا بتاريخ (${todayDate})\n\n` +
-                   `--- البيانات الأساسية ---\n` +
-                   `اسم العميل: ${name}\n` +
-                   `رقم الحساب: ${acc}\n` +
-                   `شريحة العميل (Segment): ${segment}\n` +
-                   `رقم الهاتف المتصل: ${phone}\n` +
-                   `رقم الهاتف المسجل: ${regPhone}\n` +
-                   `الفرع: ${branch}\n` +
-                   `رقم التيكت: ${ticket}\n\n` +
-                   `--- تفاصيل الاستفسار ---\n` +
-                   `${customTemplate}\n`; // الديباجة المكتوبة في الداشبورد
-                   
+    // تاريخ اليوم بالإنجليزي (أرقام إنجليزية) DD/MM/YYYY
+    const today = new Date().toLocaleDateString('en-GB');
+
+    // 1. ترتيب عنوان الإيميل (السبجكت) بالإنجليزي كما طلبت:
+    // اسم الميل - رقم الحساب - رقم الموبايل المتصل - رقم التيكت
+    const subject = `${inquiry} - ${acc} - ${phone} - ${ticket}`;
+    
+    // 2. بناء نص الإيميل (البودي)
+    let bodyText = `الساده الزملاء\n`;
+    bodyText += `تحية .. طيبة .. وبعد\n`;
+    bodyText += `برجاء الاطلاع علي الاستفسار الوارد لنا بتاريخ (${today})\n\n`;
+    
+    bodyText += `--- البيانات الأساسية ---\n`;
+    bodyText += `اسم العميل: ${name}\n`;
+    bodyText += `رقم الحساب: ${acc}\n`;
+    bodyText += `شريحة العميل: ${segment}\n`;
+    bodyText += `رقم الهاتف المتصل: ${phone}\n`;
+    bodyText += `رقم الموبايل المسجل: ${regPhone}\n`;
+    bodyText += `الفرع: ${branch}\n\n`; 
+    // تم حذف سطر (رقم التيكت) من البودي بناءً على طلبك
+    
+    bodyText += `--- تفاصيل الاستفسار ---\n`;
+    bodyText += `${customTemplate}\n\n`; 
+    
     return { subject, bodyText };
 }
 
