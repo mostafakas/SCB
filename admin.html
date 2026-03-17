@@ -260,15 +260,16 @@
                         <div><label>Masking End (Index)</label><input type="number" id="mask_end" class="form-control" placeholder="e.g. 12" value="${existingData?.maskEnd || ''}"></div>
                     </div>
                 `;
-            } else if (type === 'select') {
-                box.classList.remove('hidden');
-                box.innerHTML = `
-                    <div class="flex" style="justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <p style="color:var(--accent); font-weight:bold;">Dropdown Options & Smart Hints</p>
-                        <button class="btn btn-sm btn-edit" onclick="addSelectOption()">+ Add Option</button>
-                    </div>
-                    <div id="select_options_list"></div>
-                `;
+            else if (type === 'select') {
+                    box.classList.remove('hidden');
+                    box.innerHTML = `
+                        <div style="margin-bottom:10px;">
+                            <p style="color:var(--accent); font-weight:bold;">Dropdown Options (Bulk Mode)</p>
+                            <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom:5px;">Write options separated by comma (e.g. Option1, Option2, Option3)</p>
+                            <textarea id="bulk_select_opts" class="form-control" rows="5" placeholder="Option 1, Option 2, Option 3...">${existingData && existingData.options ? existingData.options.map(o => o.label).join(', ') : ''}</textarea>
+                        </div>
+                    `;
+                }
                 if(existingData && existingData.options) {
                     existingData.options.forEach(opt => addSelectOption(opt.label, opt.hint));
                 } else {
@@ -303,15 +304,15 @@
                 fieldData.max = document.getElementById('num_max').value;
                 fieldData.maskStart = document.getElementById('mask_start').value;
                 fieldData.maskEnd = document.getElementById('mask_end').value;
-            } else if (type === 'select') {
-                let opts = [];
-                document.querySelectorAll('.opt-row').forEach(row => {
-                    const l = row.querySelector('.opt-label').value.trim();
-                    const h = row.querySelector('.opt-hint').value.trim();
-                    if(l) opts.push({ label: l, hint: h });
-                });
-                fieldData.options = opts;
-            }
+                    else if (type === 'select') {
+                        const bulkText = document.getElementById('bulk_select_opts').value;
+                        // تحويل النص المكتوب لمصفوفة خيارات بناءً على الفاصلة
+                        let opts = bulkText.split(',').map(item => {
+                            return { label: item.trim(), hint: "" }; // حالياً بنخلي الـ Hint فاضي في الـ Bulk
+                        }).filter(item => item.label !== "");
+                        
+                        fieldData.options = opts;
+                    }
 
             if (editingFieldId && editingFieldId !== name) {
                 await db.collection("fields_pool").doc(editingFieldId).delete();
@@ -453,28 +454,61 @@
         // 3. Schema Saving & Loading
         // ==========================================
         async function saveSchema(mode) {
-            const isReq = mode === 'requests';
-            const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
-            const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa');
-            
-            const name = nameInput.value.trim();
-            const fields = isReq ? selectedReq : selectedDisp;
-            const qaList = qaInput.value.split('\n').map(q => q.trim()).filter(q => q !== "");
+    const isReq = mode === 'requests';
+    
+    // تحديد العناصر بناءً على المود (Request أو Dispute)
+    const nameInput = document.getElementById(isReq ? 'req_name' : 'disp_name');
+    const qaInput = document.getElementById(isReq ? 'req_qa' : 'disp_qa');
+    
+    const name = nameInput.value.trim();
+    const fields = isReq ? selectedReq : selectedDisp;
+    
+    // تحويل أسئلة الـ QA لمصفوفة (Array)
+    const qaList = qaInput.value.split('\n')
+                                .map(q => q.trim())
+                                .filter(q => q !== "");
 
-            if(!name || fields.length === 0) return alert("Please enter name and select at least one field.");
+    // 1. التحقق من البيانات (Validation)
+    if (!name) {
+        return alert("⚠️ Please enter the Name (e.g. Online Limit)");
+    }
+    if (fields.length === 0) {
+        return alert("⚠️ Please select at least one field from the Available list");
+    }
 
-            if (editingSchemaId && editingSchemaId !== name) {
-                await db.collection(isReq ? "request_types" : "dispute_types").doc(editingSchemaId).delete();
-            }
-
-            await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({ fields, qa: qaList });
-            alert("Schema & Configurations Deployed!");
-            
-            nameInput.value = ""; qaInput.value = "";
-            if(isReq) selectedReq = []; else selectedDisp = [];
-            editingSchemaId = null;
-            renderList(mode);
+    try {
+        // 2. معالجة حالة التعديل وتغيير الاسم
+        // لو بنعدل وغيرنا اسم الريكويست، بنمسح القديم عشان ميتكررش
+        if (editingSchemaId && editingSchemaId !== name) {
+            await db.collection(isReq ? "request_types" : "dispute_types").doc(editingSchemaId).delete();
         }
+
+        // 3. الحفظ في Firebase (الحقول + أسئلة الـ QA)
+        await db.collection(isReq ? "request_types" : "dispute_types").doc(name).set({
+            fields: fields,
+            qa: qaList
+        });
+
+        alert("✅ Schema & QA deployed successfully!");
+
+        // 4. إعادة تهيئة الواجهة (Reset UI)
+        nameInput.value = "";
+        qaInput.value = "";
+        
+        if (isReq) {
+            selectedReq = [];
+        } else {
+            selectedDisp = [];
+        }
+        
+        editingSchemaId = null; // إنهاء وضع التعديل
+        renderList(mode);       // إعادة رسم القوائم
+
+    } catch (error) {
+        console.error("Error saving schema: ", error);
+        alert("❌ Error saving to database. Please check connection.");
+    }
+}
 
         function loadSchemas(mode) {
             const col = mode === 'requests' ? "request_types" : "dispute_types";
