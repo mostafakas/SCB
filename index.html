@@ -988,31 +988,31 @@ function buildDynamicField(f) {
     
     let inputHtml = '';
     
-    // --- 1. استثناء خاص للشكاوى (Textarea يتمدد تلقائياً) ---
+    // --- 1. استثناء خاص للشكاوى (Complaint Details & Action Required) ---
+    // بنجبر الحقل ياخد عرض السطر كله، وبنلغي كلاس input-pro عشان ميربطوش بطول ثابت
     if (f.label === 'Complaint Details' || f.label === 'Action Required') {
-        div.style.gridColumn = "1 / -1"; // يأخذ عرض السطر كله
+        div.style.gridColumn = "1 / -1"; 
         inputHtml = `
             <textarea id="dyn_${f.id}" 
                       class="dyn-input" 
                       data-label="${f.label}" 
                       placeholder="Enter ${f.label} here..." 
-                      oninput="autoExpand(this)" 
-                      style="width: 100%; 
-                             min-height: 100px; 
-                             height: 100px; 
-                             padding: 12px; 
-                             border-radius: 8px; 
-                             border: 1px solid var(--border-color); 
-                             background-color: var(--input-bg); 
-                             color: var(--text-main); 
-                             font-family: inherit; 
-                             font-size: 0.85rem; 
-                             line-height: 1.6; 
-                             resize: none; 
-                             overflow: hidden; 
-                             display: block; 
-                             box-sizing: border-box; 
-                             transition: border-color 0.2s;"></textarea>
+                      oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';" 
+                      style="width: 100% !important; 
+                             min-height: 120px !important; 
+                             height: auto !important; 
+                             padding: 12px !important; 
+                             border-radius: 8px !important; 
+                             border: 1px solid var(--border-color) !important; 
+                             background-color: var(--input-bg) !important; 
+                             color: var(--text-main) !important; 
+                             font-family: inherit !important; 
+                             font-size: 0.9rem !important; 
+                             line-height: 1.6 !important; 
+                             resize: none !important; 
+                             overflow: hidden !important; 
+                             display: block !important; 
+                             box-sizing: border-box !important;"></textarea>
         `;
     } 
     // --- 2. إذا كان الحقل قائمة منسدلة (Dropdown) ---
@@ -1047,8 +1047,7 @@ function buildDynamicField(f) {
     div.innerHTML = `<label class="label-pro">${f.label}</label>${inputHtml}`;
     return div;
 }
-
-// ضف الدالة دي برضه تحتها عشان تضمن التمدد المستمر
+        // ضف الدالة دي برضه تحتها عشان تضمن التمدد المستمر
 function autoExpand(el) {
     el.style.height = 'auto'; // بنصفر الطول عشان يقيس المحتوى الجديد صح
     el.style.height = el.scrollHeight + 'px'; // بياخد طول المحتوى الفعلي
